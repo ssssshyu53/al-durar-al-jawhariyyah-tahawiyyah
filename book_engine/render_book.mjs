@@ -194,7 +194,7 @@ window.renderFullBook = async function(data, edition) {
   }
 
   function getHeaderTitle(pNum) {
-    if (pNum % 2 === 0) return '« تَيْسِيرُ الانْتِفَاعِ بِشَرْحِ مُخْتَصَرِ أَبِي شُجَاعٍ »';
+    if (pNum % 2 === 0) return '« الدُّرَرُ الجَوْهَرِيَّةُ عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ »';
     return 'لِفَضِيلَةِ الشَّيْخِ أَحْمَدَ الْجَوْهَرِيِّ';
   }
 
@@ -234,7 +234,7 @@ window.renderFullBook = async function(data, edition) {
   // Page 1: Full-Bleed Front Cover Artwork
   {
     const { el } = createPage({ cover: true, skipHeader: true });
-    el.innerHTML = '<img class="cover-img" src="' + (window.__BOOK_COVER_URL || 'file:///home/antigravity/tahawiya_repo/book_engine/cover_front.png') + '" alt="الدُّرَرُ الجَوْهَرِيَّة عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّة">';
+    el.innerHTML = '<img class="cover-img" src="' + (window.__BOOK_COVER_URL || 'file:///home/antigravity/ssssshyu53/al-durar-al-jawhariyyah-tahawiyyah/book_engine/cover_front.png') + '" alt="الدُّرَرُ الجَوْهَرِيَّة عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّة">';
   }
 
   const isEdited = data.mode === 'edited';
@@ -417,6 +417,16 @@ window.renderFullBook = async function(data, edition) {
     if (isContinuationPage) {
       return '<div class="matn-cont-dots">............................................</div>';
     }
+    if (u.matn_lines.length === 1 && u.matn_lines[0].trim() === '............................................') {
+      let hc = '';
+      let ancP = false;
+      if (u.toc_fasl) {
+        hc += '<div class="matn-bracket-title" id="unit-' + esc(u.id) + '">' + esc(u.toc_fasl) + '</div>';
+        ancP = true;
+      }
+      hc += '<div class="matn-cont-dots"' + (ancP ? '' : ' id="unit-' + esc(u.id) + '"') + '>............................................</div>';
+      return hc;
+    }
     const glosses = Array.isArray(u.glosses) ? u.glosses : [];
     const lines = u.matn_lines.map(l => String(l));
 
@@ -475,7 +485,7 @@ window.renderFullBook = async function(data, edition) {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const anchorAttr = (!anchorPlaced && i === 0) ? ' id="unit-' + esc(u.id) + '"' : '';
-      const isBasmalah = (line.trim() === 'بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيمِ');
+      const isBasmalah = /^بِسْمِ\\s+اللَّ?هِ\\s+الرَّحْم[َٰـ]*نِ\\s+الرَّحِيمِ$/.test(line.trim());
       h += '<p class="' + (isBasmalah ? 'matn-basmalah' : 'matn-p') + '"' + anchorAttr + '>' + line + '</p>';
       anchorPlaced = true;
     }

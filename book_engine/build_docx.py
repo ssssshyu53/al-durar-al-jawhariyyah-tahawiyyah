@@ -5,11 +5,11 @@ Chromium's paginated HTML DOM (`full_book.html` / `full_book_two_color.html`):
   - Exact Trim Size: 162mm x 234mm
   - Cover Plate (pg-1, full-bleed cover_front.png anchored edge-to-edge 162x234mm)
   - Framed Front Plates (pg-2..pg-4: double thick-thin border frame, 204mm frame height)
-  - Running Alternating Headers (pg-5..pg-365: evenAndOddHeaders with live PAGE field)
-  - Body Pages (pg-5..pg-359): Upper Matn with superscript gloss numbers (١),
+  - Running Alternating Headers (pg-5..end: evenAndOddHeaders with live PAGE field)
+  - Body Pages (pg-5..end): Upper Matn with superscript gloss numbers (١),
     middle horizontal split rule, Lower Sharh (bold Matn citations + Amiri Quran ayahs),
-    and per-page bottom footnote area ((*) lesson + (١) Al-Anwar glosses)
-  - Back Matter Indexes (pg-360..pg-364 Ayah Index table + pg-365 Two-Column General TOC)
+    and per-page bottom footnote area ((*) lesson + (١) classical gharib glosses)
+  - Back Matter Indexes (Ayah Index table + Two-Column General TOC)
   - Strict ECMA-376 OOXML child ordering and zero duplicate property nodes.
   - Supports `--edition classic` and `--edition two-color` (#9b111e crimson + #111111 black on white).
 """
@@ -629,20 +629,20 @@ def build_docx(edition: str, mode: str = "verbatim"):
     p = c2.paragraphs[0]
     set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=36, sb_pt=12, sa_pt=2)
     bm.add_bookmark(p, "pg-2")
-    add_run(p, "تَيْسِيرُ الانْتِفَاعِ\n", 23.0, pal["accent"], bold=True)
-    add_run(p, "بِشَرْحِ\n", 16.5, pal["accent"], bold=False)
-    add_run(p, "مُخْتَصَرِ أَبِي شُجَاعٍ", 24.0, pal["accent"], bold=True)
+    add_run(p, "الدُّرَرُ الجَوْهَرِيَّةُ\n", 23.0, pal["accent"], bold=True)
+    add_run(p, "عَلَى مَتْنِ\n", 16.5, pal["accent"], bold=False)
+    add_run(p, "العَقِيدَةِ الطَّحَاوِيَّةِ", 24.0, pal["accent"], bold=True)
 
     p2 = c2.add_paragraph()
     set_para_rtl(p2, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=22, sb_pt=6, sa_pt=4)
-    add_run(p2, "( الْمُسَمَّى بِـ « غَايَةِ الاِخْتِصَارِ وَالتَّقْرِيبِ » )", 13.5, pal["ink"])
+    add_run(p2, "( شَرْحُ مَتْنِ بَيَانِ عَقِيدَةِ أَهْلِ السُّنَّةِ وَالجَمَاعَةِ )", 13.5, pal["ink"])
 
     p3 = c2.add_paragraph()
     set_para_rtl(p3, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=28, sb_pt=4, sa_pt=20)
     add_run(
         p3,
-        "تَفْرِيغٌ مُحَرَّرٌ لِمُحَاضَرَاتِ الشَّيْخِ فِي شَرْحِ مَتْنِ أَبِي شُجَاعٍ" if is_edited
-        else "التَّفْرِيغُ الْحَرْفِيُّ الْكَامِلُ لِدُرُوسِ شَرْحِ مَتْنِ أَبِي شُجَاعٍ",
+        "تَفْرِيغٌ مُحَرَّرٌ لِمُحَاضَرَاتِ الشَّيْخِ فِي شَرْحِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ" if is_edited
+        else "التَّفْرِيغُ الْحَرْفِيُّ الْكَامِلُ لِدُرُوسِ شَرْحِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ",
         16.5, pal["ink"], bold=True
     )
 
@@ -655,14 +655,14 @@ def build_docx(edition: str, mode: str = "verbatim"):
     p5 = c2.add_paragraph()
     set_para_rtl(p5, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=20, sb_pt=8, sa_pt=24)
     set_para_top_border(p5, pal["rule_ink"], sz_eighths=4, ind_left_twips=360, ind_right_twips=360)
-    add_run(p5, "وَالْمَتْنُ لِلْقَاضِي أَبِي شُجَاعٍ أَحْمَدَ بْنِ الْحُسَيْنِ الأَصْفَهَانِيِّ (٤٣٣ – ٥٩٣ هـ)", 11.0, pal["ink"])
+    add_run(p5, "وَالْمَتْنُ لِلإِمَامِ أَبِي جَعْفَرٍ أَحْمَدَ بْنِ مُحَمَّدِ بْنِ سَلَامَةَ الطَّحَاوِيِّ الأَزْدِيِّ المِصْرِيِّ (٢٣٩ – ٣٢١ هـ)", 11.0, pal["ink"])
 
     p6 = c2.add_paragraph()
     set_para_rtl(p6, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=18, sb_pt=14, sa_pt=0)
     add_run(
         p6,
-        "كِتَابُ الطَّهَارَةِ وَكِتَابُ الصَّلاَةِ     •     ٢٥ مُحَاضَرَةً مُحَرَّرَةً" if is_edited
-        else "كِتَابُ الطَّهَارَةِ وَكِتَابُ الصَّلاَةِ     •     ٢٥ لِقَاءً صَوْتِيًّا كَامِلاً",
+        "بَيَانُ عَقِيدَةِ أَهْلِ السُّنَّةِ وَالْجَمَاعَةِ     •     ٧ مُحَاضَرَاتٍ مُحَرَّرَةٍ" if is_edited
+        else "بَيَانُ عَقِيدَةِ أَهْلِ السُّنَّةِ وَالْجَمَاعَةِ     •     ٧ لِقَاءَاتٍ صَوْتِيَّةٍ كَامِلَةٍ",
         10.5, pal["accent"], bold=True
     )
 
@@ -675,13 +675,13 @@ def build_docx(edition: str, mode: str = "verbatim"):
     p = c3.paragraphs[0]
     set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=24, sb_pt=2, sa_pt=6)
     bm.add_bookmark(p, "pg-3")
-    add_run(p, "تَيْسِيرُ الانْتِفَاعِ بِشَرْحِ مُخْتَصَرِ أَبِي شُجَاعٍ\n", 14.5, pal["accent"], bold=True)
+    add_run(p, "الدُّرَرُ الجَوْهَرِيَّةُ عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ\n", 14.5, pal["accent"], bold=True)
     if is_edited:
-        add_run(p, "تَفْرِيغٌ مُحَرَّرٌ لِمُحَاضَرَاتِ الشَّيْخِ فِي شَرْحِ مَتْنِ أَبِي شُجَاعٍ\n", 11.0, pal["ink"])
-        add_run(p, "( الْمُحَاضَرَاتُ : ١ – ٢٥ )", 10.5, pal["ink"])
+        add_run(p, "تَفْرِيغٌ مُحَرَّرٌ لِمُحَاضَرَاتِ الشَّيْخِ فِي شَرْحِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ\n", 11.0, pal["ink"])
+        add_run(p, "( الْمُحَاضَرَاتُ : ١ – ٧ )", 10.5, pal["ink"])
     else:
-        add_run(p, "تَفْرِيغٌ حَرْفِيٌّ كَامِلٌ مُرَاجَعٌ لِدُرُوسِ السِّلْسِلَةِ الْفِقْهِيَّةِ الشَّافِعِيَّةِ\n", 11.0, pal["ink"])
-        add_run(p, "( اللِّقَاءَاتُ : ١ – ٢٥ )", 10.5, pal["ink"])
+        add_run(p, "تَفْرِيغٌ حَرْفِيٌّ كَامِلٌ مُرَاجَعٌ لِدُرُوسِ شَرْحِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ\n", 11.0, pal["ink"])
+        add_run(p, "( اللِّقَاءَاتُ : ١ – ٧ )", 10.5, pal["ink"])
 
     p_box = c3.add_paragraph()
     set_para_rtl(p_box, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=20.5, sb_pt=5, sa_pt=8)
@@ -691,7 +691,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
         "أُعِدَّ هَذَا الْكِتَابُ بِتَفْرِيغِ مُحَاضَرَاتِ الشَّيْخِ الشَّارِحِ وَتَحْرِيرِهَا بِالْعَرَبِيَّةِ الْفُصْحَى الْمُيَسَّرَةِ، وَتَنْقِيَتِهَا مِنَ الْعَامِّيَّةِ وَفَوَاتِحِ الدُّرُوسِ وَخَوَاتِمِهَا وَأَسْئِلَةِ الْحُضُورِ، مَعَ الأَمَانَةِ التَّامَّةِ فِي حِفْظِ الْمَعَانِي وَالأَحْكَامِ دُونَ تَغْيِيرٍ أَوْ زِيَادَةٍ."
         if is_edited else
         "أُعِدَّ هَذَا الْكِتَابُ بِإِثْبَاتِ كَلاَمِ الشَّيْخِ الشَّارِحِ كَامِلاً كَمَا أُلْقِيَ دُونَ حَذْفٍ أَوْ اخْتِصَارٍ ،\n"
-        "مَعَ إِثْبَاتِ مَتْنِ أَبِي شُجَاعٍ مَضْبُوطاً بِالشَّكْلِ أَعْلَى الصَّفْحَةِ مَفْصُولاً بِخَطٍّ أُفُقِيٍّ عَنِ الشَّرْحِ أَسْفَلَهُ",
+        "مَعَ إِثْبَاتِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ مَضْبُوطاً بِالشَّكْلِ أَعْلَى الصَّفْحَةِ مَفْصُولاً بِخَطٍّ أُفُقِيٍّ عَنِ الشَّرْحِ أَسْفَلَهُ",
         11.5, pal["ink"], bold=True
     )
 
@@ -701,10 +701,10 @@ def build_docx(edition: str, mode: str = "verbatim"):
     add_run(p_src, "مَنْهَجُ الحَوَاشِي وَتَفْسِيرِ غَرِيبِ الْمَتْنِ :\n", 10.0, pal["accent"], bold=True)
     add_run(
         p_src,
-        "أُلْحِقَتْ بِالحَوَاشِي أَسْفَلَ الصَّفَحَاتِ مَعَانِي الأَلْفَاظِ الْغَرِيبَةِ وَبَعْضِ الْمُصْطَلَحَاتِ الَّتِي لَمْ يَتَعَرَّضْ الشَّيْخُ الشَّارِحُ لِبَيَانِهَا فِي مَوْضِعِهَا، مُنْتَقَاةً مِنْ رِسَالَةِ :\n",
+        "أُلْحِقَتْ بِالحَوَاشِي أَسْفَلَ الصَّفَحَاتِ مَعَانِي الأَلْفَاظِ الْغَرِيبَةِ وَبَعْضِ الْمُصْطَلَحَاتِ الَّتِي لَمْ يَتَعَرَّضْ الشَّيْخُ الشَّارِحُ لِبَيَانِهَا فِي مَوْضِعِهَا، مُنْتَقَاةً مِنْ :\n",
         10.0, pal["ink"]
     )
-    add_run(p_src, "«الأَنوَارُ عَلَى غَايَةِ الاِخْتِصَارِ» لِجَامِعِهِ عَبْدِ الرَّحْمَنِ مُحَمَّدٍ نُورِ الدِّينِ\n", 10.5, pal["accent"], bold=True)
+    add_run(p_src, "مُسْتَفَادٌ مِنْ شُرُوحِ الطَّحَاوِيَّةِ وَمَعَاجِمِ غَرِيبِ الأَلْفَاظِ وَالتَّعْرِيفَاتِ (ابْنُ أَبِي العِزِّ، البَيَاضِيُّ، لِسَانُ العَرَبِ، مُفْرَدَاتُ الرَّاغِبِ)\n", 10.2, pal["accent"], bold=True)
     add_run(p_src, "بِتَرْقِيمٍ مُسْتَقِلٍّ لِكُلِّ صَفْحَةٍ يَبْدَأُ بِـ ", 10.0, pal["ink"])
     add_run(p_src, "(١)", 10.0, pal["accent"], bold=True)
     add_run(p_src, " دُونَ تَكْرَارٍ لِلْمَعْنَى فِي الصَّفْحَةِ الْوَاحِدَةِ.", 10.0, pal["ink"])
@@ -725,7 +725,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
     p_cf = c3.add_paragraph()
     set_para_rtl(p_cf, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=17.5, sb_pt=6, sa_pt=0)
     set_para_top_border(p_cf, pal["rule_ink"], sz_eighths=5, ind_left_twips=480, ind_right_twips=480)
-    add_run(p_cf, "تَيْسِيرُ الانْتِفَاعِ بِشَرْحِ مُخْتَصَرِ أَبِي شُجَاعٍ — لِفَضِيلَةِ الشَّيْخِ أَحْمَدَ الْجَوْهَرِيِّ", 10.0, pal["accent"], bold=True)
+    add_run(p_cf, "الدُّرَرُ الجَوْهَرِيَّةُ عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ — لِفَضِيلَةِ الشَّيْخِ أَحْمَدَ الْجَوْهَرِيِّ", 10.0, pal["accent"], bold=True)
 
     # Page Break to pg-4
     p_brk4 = doc.add_paragraph()
@@ -760,7 +760,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
     configure_page_size(sec2, top_mm=21.2, bottom_mm=11.5, left_mm=18.5, right_mm=18.5, hdr_mm=13.0, ftr_mm=8.0)
     set_section_page_start(sec2, 5)
     configure_running_header(sec2.header, "لِفَضِيلَةِ الشَّيْخِ أَحْمَدَ الْجَوْهَرِيِّ", "left", 5, pal)
-    configure_running_header(sec2.even_page_header, "« تَيْسِيرُ الانْتِفَاعِ بِشَرْحِ مُخْتَصَرِ أَبِي شُجَاعٍ »", "right", 6, pal)
+    configure_running_header(sec2.even_page_header, "« الدُّرَرُ الجَوْهَرِيَّةُ عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ »", "right", 6, pal)
 
     for pg in pages[4:]:
         pnum = int(pg.get("id").replace("pg-", ""))
