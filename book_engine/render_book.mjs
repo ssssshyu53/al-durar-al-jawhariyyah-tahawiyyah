@@ -143,29 +143,8 @@ window.renderFullBook = async function(data, edition) {
 
   const CHAPTER_BANNER_HTML = '<div class="chapter-banner"><img class="chapter-banner-img" src="' + bannerUrl + '" alt=""></div>';
 
-  // Symmetric black arabesque center medallion + flanking accent rosettes matching image_2.png (p. 548)
-  const TAILPIECE_HTML = (function() {
-    const ros = (cx, cy) => {
-      let s = '<g transform="translate(' + cx + ',' + cy + ')"><circle r="2.2" fill="currentColor"/>';
-      for (let a = 0; a < 360; a += 45) {
-        s += '<path d="M0,-2.6 C1.8,-5.5 1.8,-8.2 0,-8.8 C-1.8,-8.2 -1.8,-5.5 0,-2.6 Z" fill="currentColor" transform="rotate(' + a + ')"/>';
-      }
-      return s + '</g>';
-    };
-    const centerPalmette =
-      '<g transform="translate(110,13)" fill="#111111">' +
-        '<path d="M0,-10 C5,-5 12,-5 22,0 C12,5 5,5 0,10 C-5,5 -12,5 -22,0 C-12,-5 -5,-5 0,-10 Z"/>' +
-        '<circle r="3.4" fill="#ffffff"/>' +
-        '<circle r="1.7" fill="#111111"/>' +
-        '<circle cx="-11" cy="0" r="1.4" fill="#ffffff"/>' +
-        '<circle cx="11" cy="0" r="1.4" fill="#ffffff"/>' +
-        '<circle cx="-27" cy="0" r="1.8" fill="#111111"/>' +
-        '<circle cx="27" cy="0" r="1.8" fill="#111111"/>' +
-      '</g>';
-    return '<div class="tailpiece-row"><svg class="tailpiece-svg" viewBox="0 0 220 26">' +
-      ros(42, 13) + centerPalmette + ros(178, 13) +
-    '</svg></div>';
-  })();
+  // Three side-by-side ornamental 8-petal floral stars (no center diamond symbol)
+  const THREE_STARS_HTML = '<div class="stars-row">' + STAR_SVG + STAR_SVG + STAR_SVG + '</div>';
 
   function tokenizeHtml(htmlStr) {
     const tmp = document.createElement('div');
@@ -384,7 +363,7 @@ window.renderFullBook = async function(data, edition) {
     bodyFrame.innerHTML =
       '<div class="frame-outer"><div class="frame-inner" style="justify-content:center;">' +
         '<img class="basmalah-plate-img" src="' + basmalahUrl + '" alt="بسم الله الرحمن الرحيم">' +
-        '<div style="margin-top:16pt;">' + TAILPIECE_HTML + '</div>' +
+        '<div style="margin-top:16pt;">' + THREE_STARS_HTML + '</div>' +
       '</div></div>';
   }
 
@@ -557,7 +536,7 @@ window.renderFullBook = async function(data, edition) {
       anchorPlaced = true;
     }
     if (u.fasl_end) {
-      h += TAILPIECE_HTML;
+      h += THREE_STARS_HTML;
     }
     return h;
   }
@@ -700,7 +679,7 @@ window.renderFullBook = async function(data, edition) {
     }
 
     if (u.fasl_end) {
-      curPageObj.sharhZone.insertAdjacentHTML('beforeend', TAILPIECE_HTML);
+      curPageObj.sharhZone.insertAdjacentHTML('beforeend', THREE_STARS_HTML);
       if (!fitsPage(curPageObj)) {
         const tailEl = curPageObj.sharhZone.lastElementChild;
         if (tailEl) tailEl.style.margin = '1pt 0';

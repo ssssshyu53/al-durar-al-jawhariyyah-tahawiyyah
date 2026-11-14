@@ -618,15 +618,15 @@ header.top-bar {{
   z-index: 1;
 }}
 .chapter-banner-img {{
-  width: 122mm;
-  height: 33.12mm;
+  width: 124mm;
+  height: 22.32mm;
   display: block;
   margin: 0 auto;
 }}
 .chapter-banner + .preface-h,
 .chapter-banner + .matn-book-title,
 .chapter-banner + .toc-page-title {{
-  margin-top: -12.5mm;
+  margin-top: -5mm;
   position: relative;
   z-index: 2;
 }}
@@ -693,17 +693,18 @@ header.top-bar {{
   margin-right: 1pt;
   color: var(--fn-num-ink);
 }}
-.tailpiece-row {{
+.stars-row {{
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 5pt 0 4pt 0;
+  gap: 24pt;
+  margin: 4.5pt 0 3.5pt 0;
   flex-shrink: 0;
   color: var(--accent);
 }}
-.tailpiece-svg {{
-  width: 54mm;
-  height: auto;
+.star-svg {{
+  width: 11pt;
+  height: 11pt;
   display: block;
   color: var(--accent);
 }}

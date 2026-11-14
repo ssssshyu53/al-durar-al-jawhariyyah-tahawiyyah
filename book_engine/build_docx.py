@@ -912,7 +912,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
                                  sb_pt=0, sa_pt=0, page_break_before=first_para_of_page,
                                  line_rule="atLeast", keep_with_next=True)
                     first_para_of_page = False
-                    p.add_run().add_picture(banner_img, width=Mm(102))
+                    p.add_run().add_picture(banner_img, width=Mm(116))
                 elif "tailpiece-row" in cls:
                     p = doc.add_paragraph()
                     set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=10.0,
@@ -958,10 +958,11 @@ def build_docx(edition: str, mode: str = "verbatim"):
                     render_inline_html_runs(p, child, 13.0, pal, is_matn=True)
                 elif "stars-row" in cls:
                     p = doc.add_paragraph()
-                    set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=12.0,
-                                 sb_pt=1.0, sa_pt=2.0, page_break_before=first_para_of_page)
+                    set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=10.0,
+                                 sb_pt=2.5, sa_pt=2.0, page_break_before=first_para_of_page,
+                                 line_rule="atLeast")
                     first_para_of_page = False
-                    add_run(p, "✽      ✽      ✽", 9.5, pal["accent"])
+                    p.add_run().add_picture(tailpiece_img, width=Mm(54))
                 else:
                     continue
 
@@ -982,7 +983,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
                                  sb_pt=0, sa_pt=0, page_break_before=first_para_of_page,
                                  line_rule="atLeast", keep_with_next=True)
                     first_para_of_page = False
-                    p.add_run().add_picture(banner_img, width=Mm(102))
+                    p.add_run().add_picture(banner_img, width=Mm(116))
                 elif "tailpiece-row" in cls:
                     p = doc.add_paragraph()
                     set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=10.0,
@@ -1008,10 +1009,11 @@ def build_docx(edition: str, mode: str = "verbatim"):
                     render_inline_html_runs(p, child, 11.0, pal, is_matn=False)
                 elif "stars-row" in cls:
                     p = doc.add_paragraph()
-                    set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=12.0,
-                                 sb_pt=2.0, sa_pt=1.0, page_break_before=first_para_of_page)
+                    set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=10.0,
+                                 sb_pt=2.5, sa_pt=2.0, page_break_before=first_para_of_page,
+                                 line_rule="atLeast")
                     first_para_of_page = False
-                    add_run(p, "✽      ✽      ✽", 9.5, pal["accent"])
+                    p.add_run().add_picture(tailpiece_img, width=Mm(54))
                 else:
                     continue
 
@@ -1071,7 +1073,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
                              sb_pt=0, sa_pt=0, page_break_before=first_of_ay,
                              line_rule="atLeast", keep_with_next=True)
                 bm.add_bookmark(p_ban, f"pg-{pnum}")
-                p_ban.add_run().add_picture(banner_img, width=Mm(102))
+                p_ban.add_run().add_picture(banner_img, width=Mm(116))
                 first_of_ay = False
 
             title_el = pg.xpath('.//*[contains(@class,"toc-page-title")]')[0]
@@ -1155,7 +1157,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
                              sb_pt=0, sa_pt=0, page_break_before=first_of_toc,
                              line_rule="atLeast", keep_with_next=True)
                 bm.add_bookmark(p_ban, f"pg-{pnum}")
-                p_ban.add_run().add_picture(banner_img, width=Mm(102))
+                p_ban.add_run().add_picture(banner_img, width=Mm(116))
                 first_of_toc = False
 
             title_el = pg.xpath('.//*[contains(@class,"toc-page-title")]')[0]
