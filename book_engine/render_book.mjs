@@ -130,30 +130,18 @@ window.renderFullBook = async function(data, edition) {
       '<line x1="2" y1="9.5" x2="26" y2="9.5" stroke="currentColor" stroke-width="0.95"/>' +
     '</svg>';
 
-  // Ornate Islamic frieze + curled black architectural bracket matching image_2.png (p. 549)
-  const CHAPTER_BANNER_HTML = (function() {
-    let arches = '';
-    for (let x = 52; x <= 398; x += 14) {
-      arches += '<path d="M' + x + ',19 L' + x + ',11 Q' + (x + 3.5) + ',5 ' + (x + 7) + ',2 Q' + (x + 10.5) + ',5 ' + (x + 14) + ',11 L' + (x + 14) + ',19 Z" fill="none" stroke="currentColor" stroke-width="0.95"/>' +
-                '<circle cx="' + (x + 7) + '" cy="13.5" r="1.5" fill="currentColor"/>';
-    }
-    const rosette = (cx, cy, r) => {
-      let p = '<g transform="translate(' + cx + ',' + cy + ')"><circle r="' + (r * 0.25) + '" fill="currentColor"/>';
-      for (let a = 0; a < 360; a += 45) {
-        p += '<path d="M0,-' + (r * 0.28) + ' C' + (r * 0.22) + ',-' + (r * 0.65) + ' ' + (r * 0.2) + ',-' + r + ' 0,-' + r + ' C-' + (r * 0.2) + ',-' + r + ' -' + (r * 0.22) + ',-' + (r * 0.65) + ' 0,-' + (r * 0.28) + ' Z" fill="currentColor" transform="rotate(' + a + ')"/>';
-      }
-      return p + '</g>';
-    };
-    const medLeft  = rosette(26, 11, 10) + rosette(14, 41, 7.5);
-    const medRight = rosette(434, 11, 10) + rosette(446, 41, 7.5);
-    return '<div class="chapter-banner"><svg class="chapter-banner-svg" viewBox="0 0 460 54">' +
-      '<line x1="48" y1="19" x2="412" y2="19" stroke="currentColor" stroke-width="1"/>' +
-      '<line x1="48" y1="2.5" x2="412" y2="2.5" stroke="currentColor" stroke-width="0.6"/>' +
-      arches + medLeft + medRight +
-      '<path d="M8,50 C2,50 2,42 7,42 L7,25 L453,25 L453,42 C458,42 458,50 452,50" fill="none" stroke="#111111" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<path d="M23,31 L437,31" fill="none" stroke="currentColor" stroke-width="0.65" stroke-dasharray="2,3"/>' +
-    '</svg></div>';
-  })();
+  // Preload & decode all book plate/banner images BEFORE synchronous pagination
+  const coverUrl = window.__BOOK_COVER_URL || 'file:///home/antigravity/ssssshyu53/al-durar-al-jawhariyyah-tahawiyyah/book_engine/cover_front.png';
+  const basmalahUrl = window.__BASMALAH_URL || ('file:///home/antigravity/ssssshyu53/al-durar-al-jawhariyyah-tahawiyyah/book_engine/' + (edition === 'two-color' ? 'basmalah_plum.png' : 'basmalah.png'));
+  const bannerUrl = window.__BANNER_URL || ('file:///home/antigravity/ssssshyu53/al-durar-al-jawhariyyah-tahawiyyah/book_engine/' + (edition === 'two-color' ? 'banner_two_color.png' : 'banner_classic.png'));
+  await Promise.all([coverUrl, basmalahUrl, bannerUrl].map(u => new Promise(res => {
+    const im = new Image();
+    im.onload = () => (im.decode ? im.decode().catch(() => {}).finally(res) : res());
+    im.onerror = res;
+    im.src = u;
+  })));
+
+  const CHAPTER_BANNER_HTML = '<div class="chapter-banner"><img class="chapter-banner-img" src="' + bannerUrl + '" alt=""></div>';
 
   // Symmetric black arabesque center medallion + flanking accent rosettes matching image_2.png (p. 548)
   const TAILPIECE_HTML = (function() {
@@ -306,7 +294,7 @@ window.renderFullBook = async function(data, edition) {
   // Page 1: Full-Bleed Front Cover Artwork
   {
     const { el } = createPage({ cover: true, skipHeader: true });
-    el.innerHTML = '<img class="cover-img" src="' + (window.__BOOK_COVER_URL || 'file:///home/antigravity/ssssshyu53/al-durar-al-jawhariyyah-tahawiyyah/book_engine/cover_front.png') + '" alt="الدُّرَرُ الجَوْهَرِيَّة عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّة">';
+    el.innerHTML = '<img class="cover-img" src="' + coverUrl + '" alt="الدُّرَرُ الجَوْهَرِيَّة عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّة">';
   }
 
   const isEdited = data.mode === 'edited';
@@ -393,7 +381,6 @@ window.renderFullBook = async function(data, edition) {
   // Page 4: Calligraphic Basmalah PNG Plate
   {
     const { bodyFrame } = createPage({ framed: true, skipHeader: true });
-    const basmalahUrl = window.__BASMALAH_URL || ('file:///home/antigravity/ssssshyu53/al-durar-al-jawhariyyah-tahawiyyah/book_engine/' + (edition === 'two-color' ? 'basmalah_plum.png' : 'basmalah.png'));
     bodyFrame.innerHTML =
       '<div class="frame-outer"><div class="frame-inner" style="justify-content:center;">' +
         '<img class="basmalah-plate-img" src="' + basmalahUrl + '" alt="بسم الله الرحمن الرحيم">' +
@@ -478,8 +465,10 @@ window.renderFullBook = async function(data, edition) {
     if (p.bodyFrame.scrollHeight > p.bodyFrame.clientHeight + 2) return false;
     const lastEl = p.sharhZone.lastElementChild;
     if (lastEl) {
+      const lastBottom = lastEl.getBoundingClientRect().bottom;
       const sBottom = p.sharhZone.getBoundingClientRect().bottom;
-      if (lastEl.getBoundingClientRect().bottom > sBottom - 2) return false;
+      if (lastBottom > sBottom - 2) return false;
+      if (p.hasFootnote && p.footnoteArea && lastBottom > p.footnoteArea.getBoundingClientRect().top - 3) return false;
     }
     return true;
   }
@@ -852,6 +841,7 @@ window.__BOOK_DATA = ${JSON.stringify(BOOK_DATA)};
 window.__BOOK_EDITION = ${JSON.stringify(EDITION)};
 window.__BOOK_COVER_URL = ${JSON.stringify('file://' + path.join(__ENG, 'cover_front.png'))};
 window.__BASMALAH_URL = ${JSON.stringify('file://' + path.join(__ENG, EDITION === 'two-color' ? 'basmalah_plum.png' : 'basmalah.png'))};
+window.__BANNER_URL = ${JSON.stringify('file://' + path.join(__ENG, EDITION === 'two-color' ? 'banner_two_color.png' : 'banner_classic.png'))};
 ${PAGINATE_FN_SRC}
 window.__BOOK_RESULT = null;
 window.__BOOK_ERROR = null;

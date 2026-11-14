@@ -502,12 +502,12 @@ def configure_running_header(hdr, title_text: str, side: str, start_pg_num: int,
     # side == "left": badge on LEFT (odd page); title on RIGHT.
     # side == "right": badge on RIGHT (even page); title on LEFT.
     if side == "left":
-        widths = [Mm(91), Mm(34)]
+        widths = [Mm(96), Mm(29)]
         title_idx, badge_idx = 0, 1
         title_align = WD_ALIGN_PARAGRAPH.RIGHT
         badge_align = WD_TABLE_ALIGNMENT.LEFT
     else:
-        widths = [Mm(34), Mm(91)]
+        widths = [Mm(29), Mm(96)]
         badge_idx, title_idx = 0, 1
         title_align = WD_ALIGN_PARAGRAPH.LEFT
         badge_align = WD_TABLE_ALIGNMENT.RIGHT
@@ -516,11 +516,11 @@ def configure_running_header(hdr, title_text: str, side: str, start_pg_num: int,
     for idx, cell in enumerate(row.cells):
         set_cell_width(cell, widths[idx])
         cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        set_cell_margins(cell, top_dxa=0, bottom_dxa=55, left_dxa=0, right_dxa=0)
+        set_cell_margins(cell, top_dxa=45, bottom_dxa=65, left_dxa=0, right_dxa=0)
         set_cell_borders(cell, bottom=("single", 5, pal["rule_ink"]))
 
     p_title = row.cells[title_idx].paragraphs[0]
-    set_para_rtl(p_title, align=title_align, line_pt=14.0, sb_pt=0, sa_pt=0, line_rule="atLeast")
+    set_para_rtl(p_title, align=title_align, line_pt=19.0, sb_pt=0, sa_pt=0, line_rule="atLeast")
     if use_styleref:
         add_styleref_field(p_title, "DurarRunningHead", title_text, 10.0, pal["accent"], bold=True)
     else:
@@ -867,7 +867,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
     # ==================== SECTION 2: pg-5 .. body_end_pg BODY PAGES ====================
     sec2 = doc.add_section(WD_SECTION.NEW_PAGE)
     shrink_section_break_para(sec1)
-    configure_page_size(sec2, top_mm=21.2, bottom_mm=11.5, left_mm=18.5, right_mm=18.5, hdr_mm=13.0, ftr_mm=8.0)
+    configure_page_size(sec2, top_mm=21.2, bottom_mm=11.5, left_mm=18.5, right_mm=18.5, hdr_mm=10.5, ftr_mm=8.0)
     set_section_page_start(sec2, 5)
     configure_running_header(sec2.header, "مُقَدِّمَةُ الْكِتَابِ", "left", 5, pal, wing_img, use_styleref=True)
     configure_running_header(sec2.even_page_header, "الدُّرَرُ الجَوْهَرِيَّةُ عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ", "right", 6, pal, wing_img, use_styleref=False)
@@ -909,10 +909,10 @@ def build_docx(edition: str, mode: str = "verbatim"):
                 if "chapter-banner" in cls:
                     p = doc.add_paragraph()
                     set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=14.0,
-                                 sb_pt=0, sa_pt=2.5, page_break_before=first_para_of_page,
+                                 sb_pt=0, sa_pt=0, page_break_before=first_para_of_page,
                                  line_rule="atLeast", keep_with_next=True)
                     first_para_of_page = False
-                    p.add_run().add_picture(banner_img, width=Mm(122))
+                    p.add_run().add_picture(banner_img, width=Mm(102))
                 elif "tailpiece-row" in cls:
                     p = doc.add_paragraph()
                     set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=10.0,
@@ -925,7 +925,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
                     if not has_bracket_in_mz:
                         p.style = rh_style
                     set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=31.0,
-                                 sb_pt=3.0, sa_pt=3.5, page_break_before=first_para_of_page,
+                                 sb_pt=0, sa_pt=3.5, page_break_before=first_para_of_page,
                                  line_rule="atLeast")
                     first_para_of_page = False
                     add_run(p, child.text_content().strip(), 17.0, pal["accent"], bold=True)
@@ -979,10 +979,10 @@ def build_docx(edition: str, mode: str = "verbatim"):
                 if "chapter-banner" in cls:
                     p = doc.add_paragraph()
                     set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=14.0,
-                                 sb_pt=0, sa_pt=2.5, page_break_before=first_para_of_page,
+                                 sb_pt=0, sa_pt=0, page_break_before=first_para_of_page,
                                  line_rule="atLeast", keep_with_next=True)
                     first_para_of_page = False
-                    p.add_run().add_picture(banner_img, width=Mm(122))
+                    p.add_run().add_picture(banner_img, width=Mm(102))
                 elif "tailpiece-row" in cls:
                     p = doc.add_paragraph()
                     set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=10.0,
@@ -994,7 +994,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
                     p = doc.add_paragraph()
                     p.style = rh_style
                     set_para_rtl(p, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=30.0,
-                                 sb_pt=3.0, sa_pt=6.0, page_break_before=first_para_of_page,
+                                 sb_pt=0, sa_pt=6.0, page_break_before=first_para_of_page,
                                  line_rule="atLeast")
                     first_para_of_page = False
                     add_run(p, child.text_content().strip(), 16.5, pal["accent"], bold=True)
@@ -1055,7 +1055,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
     if ayah_start_pg:
         sec3 = doc.add_section(WD_SECTION.NEW_PAGE)
         shrink_section_break_para(sec2)
-        configure_page_size(sec3, top_mm=21.2, bottom_mm=11.5, left_mm=18.5, right_mm=18.5, hdr_mm=13.0, ftr_mm=8.0)
+        configure_page_size(sec3, top_mm=21.2, bottom_mm=11.5, left_mm=18.5, right_mm=18.5, hdr_mm=10.5, ftr_mm=8.0)
         set_section_page_start(sec3, ayah_start_pg)
         configure_running_header(sec3.header, "فَهْرَسُ الآيَاتِ الْقُرْآنِيَّةِ", "left", ayah_start_pg, pal, wing_img, use_styleref=False)
         configure_running_header(sec3.even_page_header, "الدُّرَرُ الجَوْهَرِيَّةُ عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ", "right", ayah_start_pg, pal, wing_img, use_styleref=False)
@@ -1068,17 +1068,17 @@ def build_docx(edition: str, mode: str = "verbatim"):
             if has_ban:
                 p_ban = doc.add_paragraph()
                 set_para_rtl(p_ban, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=14.0,
-                             sb_pt=0, sa_pt=2.5, page_break_before=first_of_ay,
+                             sb_pt=0, sa_pt=0, page_break_before=first_of_ay,
                              line_rule="atLeast", keep_with_next=True)
                 bm.add_bookmark(p_ban, f"pg-{pnum}")
-                p_ban.add_run().add_picture(banner_img, width=Mm(122))
+                p_ban.add_run().add_picture(banner_img, width=Mm(102))
                 first_of_ay = False
 
             title_el = pg.xpath('.//*[contains(@class,"toc-page-title")]')[0]
             p_t = doc.add_paragraph()
             t_sz = 13.0 if "تَابِعُ" in title_el.text_content() else 16.5
             set_para_rtl(p_t, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=max(24.0, t_sz * 1.65),
-                         sb_pt=3.0, sa_pt=4.0, page_break_before=first_of_ay, line_rule="atLeast")
+                         sb_pt=(0 if has_ban else 3.0), sa_pt=4.0, page_break_before=first_of_ay, line_rule="atLeast")
             if not has_ban:
                 bm.add_bookmark(p_t, f"pg-{pnum}")
             add_run(p_t, title_el.text_content().strip(), t_sz, pal["accent"], bold=True)
@@ -1139,7 +1139,7 @@ def build_docx(edition: str, mode: str = "verbatim"):
     if toc_start_pg:
         sec4 = doc.add_section(WD_SECTION.NEW_PAGE)
         shrink_section_break_para(sec3 if ayah_start_pg else sec2)
-        configure_page_size(sec4, top_mm=21.2, bottom_mm=11.5, left_mm=18.5, right_mm=18.5, hdr_mm=13.0, ftr_mm=8.0)
+        configure_page_size(sec4, top_mm=21.2, bottom_mm=11.5, left_mm=18.5, right_mm=18.5, hdr_mm=10.5, ftr_mm=8.0)
         set_section_page_start(sec4, toc_start_pg)
         configure_running_header(sec4.header, "اَلْفَهْرَسُ الْعَامُّ", "left", toc_start_pg, pal, wing_img, use_styleref=False)
         configure_running_header(sec4.even_page_header, "الدُّرَرُ الجَوْهَرِيَّةُ عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ", "right", toc_start_pg, pal, wing_img, use_styleref=False)
@@ -1152,16 +1152,16 @@ def build_docx(edition: str, mode: str = "verbatim"):
             if has_ban:
                 p_ban = doc.add_paragraph()
                 set_para_rtl(p_ban, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=14.0,
-                             sb_pt=0, sa_pt=2.5, page_break_before=first_of_toc,
+                             sb_pt=0, sa_pt=0, page_break_before=first_of_toc,
                              line_rule="atLeast", keep_with_next=True)
                 bm.add_bookmark(p_ban, f"pg-{pnum}")
-                p_ban.add_run().add_picture(banner_img, width=Mm(122))
+                p_ban.add_run().add_picture(banner_img, width=Mm(102))
                 first_of_toc = False
 
             title_el = pg.xpath('.//*[contains(@class,"toc-page-title")]')[0]
             p_t = doc.add_paragraph()
             set_para_rtl(p_t, align=WD_ALIGN_PARAGRAPH.CENTER, line_pt=26.0,
-                         sb_pt=3.0, sa_pt=6.0, page_break_before=first_of_toc, line_rule="atLeast")
+                         sb_pt=(0 if has_ban else 3.0), sa_pt=5.0, page_break_before=first_of_toc, line_rule="atLeast")
             if not has_ban:
                 bm.add_bookmark(p_t, f"pg-{pnum}")
             add_run(p_t, title_el.text_content().strip(), 16.5, pal["accent"], bold=True)

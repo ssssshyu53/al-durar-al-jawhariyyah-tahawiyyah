@@ -68,11 +68,15 @@ book_root_inner = m_root.group(1) if m_root else ""
 cover_uri = encode_cover_data_uri(COVER_PATH)
 basmalah_classic_uri = encode_png_data_uri(os.path.join(_ENG, "basmalah.png"))
 basmalah_plum_uri = encode_png_data_uri(os.path.join(_ENG, "basmalah_plum.png"))
+banner_classic_uri = encode_png_data_uri(os.path.join(_ENG, "banner_classic.png"))
+banner_plum_uri = encode_png_data_uri(os.path.join(_ENG, "banner_two_color.png"))
 book_root_inner = (
     book_root_inner
     .replace(f"file://{COVER_PATH}", cover_uri)
     .replace(f"file://{os.path.join(_ENG, 'basmalah.png')}", basmalah_plum_uri)
     .replace(f"file://{os.path.join(_ENG, 'basmalah_plum.png')}", basmalah_plum_uri)
+    .replace(f"file://{os.path.join(_ENG, 'banner_classic.png')}", banner_plum_uri)
+    .replace(f"file://{os.path.join(_ENG, 'banner_two_color.png')}", banner_plum_uri)
 )
 
 # Extract page map for exact page discovery
@@ -427,7 +431,7 @@ header.top-bar {{
 .page {{
   width: 162mm;
   height: 234mm;
-  padding: 12.5mm 19mm 12.5mm 19mm;
+  padding: 10.5mm 19mm 12.5mm 19mm;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -544,7 +548,7 @@ header.top-bar {{
 }}
 .basmalah-plate-img {{
   width: 72mm;
-  height: auto;
+  height: 67.36mm;
   display: block;
   margin: 0 auto;
 }}
@@ -554,19 +558,20 @@ header.top-bar {{
   justify-content: space-between;
   align-items: center;
   border-bottom: 0.8pt solid var(--rule-ink);
-  padding-bottom: 3.5pt;
+  padding: 2pt 0 3pt 0;
   margin-bottom: 4pt;
   font-size: 9.8pt;
-  line-height: 1.45;
+  line-height: 2.05;
   flex-shrink: 0;
+  overflow: visible;
 }}
 .rh-title {{
   color: var(--accent);
   font-weight: 700;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 84mm;
+  overflow: visible;
+  line-height: 2.05;
+  padding-top: 1.5pt;
 }}
 .rh-badge-wrap {{
   display: inline-flex;
@@ -575,6 +580,7 @@ header.top-bar {{
   color: var(--accent);
   direction: ltr;
   flex-shrink: 0;
+  padding-top: 1.5pt;
 }}
 .rh-wing-svg {{
   width: 18pt;
@@ -590,7 +596,7 @@ header.top-bar {{
   text-align: center;
   font-weight: 700;
   font-size: 9.5pt;
-  line-height: 1.25;
+  line-height: 1.3;
   color: var(--accent);
 }}
 
@@ -600,22 +606,29 @@ header.top-bar {{
   flex-direction: column;
   overflow: visible;
   min-height: 0;
-  padding-top: 5pt;
+  padding-top: 4pt;
   padding-bottom: 0;
 }}
 .chapter-banner {{
   width: 100%;
-  margin: 0 0 2pt 0;
+  margin: 0;
   text-align: center;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }}
-.chapter-banner-svg {{
-  width: 100%;
-  max-width: 122mm;
-  height: auto;
+.chapter-banner-img {{
+  width: 122mm;
+  height: 33.12mm;
   display: block;
   margin: 0 auto;
-  color: var(--accent);
+}}
+.chapter-banner + .preface-h,
+.chapter-banner + .matn-book-title,
+.chapter-banner + .toc-page-title {{
+  margin-top: -12.5mm;
+  position: relative;
+  z-index: 2;
 }}
 .matn-zone {{
   font-size: 13.2pt;
@@ -1110,6 +1123,8 @@ function toggleVideo() {{
 
 const BASMALAH_PLUM_URI = {json.dumps(basmalah_plum_uri)};
 const BASMALAH_CLASSIC_URI = {json.dumps(basmalah_classic_uri)};
+const BANNER_PLUM_URI = {json.dumps(banner_plum_uri)};
+const BANNER_CLASSIC_URI = {json.dumps(banner_classic_uri)};
 const themes = [
   {{ key: 'two-color', label: '🎨 نسخة لونين' }},
   {{ key: 'white',     label: '🎨 أبيض كلاسيكي' }},
@@ -1123,6 +1138,9 @@ function cyclePaperTheme() {{
   document.getElementById('btnTheme').textContent = themes[tIdx].label;
   document.querySelectorAll('.basmalah-plate-img').forEach(im => {{
     im.src = (k === 'two-color') ? BASMALAH_PLUM_URI : BASMALAH_CLASSIC_URI;
+  }});
+  document.querySelectorAll('.chapter-banner-img').forEach(im => {{
+    im.src = (k === 'two-color') ? BANNER_PLUM_URI : BANNER_CLASSIC_URI;
   }});
 }}
 
