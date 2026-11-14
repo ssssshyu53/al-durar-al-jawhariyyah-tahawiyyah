@@ -122,7 +122,62 @@ window.renderFullBook = async function(data, edition) {
   const STAR_SVG = '<svg class="star-svg" viewBox="0 0 100 100"><g transform="translate(50,50)"><circle r="9" fill="currentColor"/>' +
     [0,45,90,135,180,225,270,315].map(a => '<path d="M0,-12 C6,-28 8,-44 0,-48 C-8,-44 -6,-28 0,-12 Z" fill="currentColor" transform="rotate('+a+')"/>').join('') +
     '</g></svg>';
-  const THREE_STARS_HTML = '<div class="stars-row">' + STAR_SVG + STAR_SVG + STAR_SVG + '</div>';
+
+  const WING_SVG =
+    '<svg class="rh-wing-svg" viewBox="0 0 28 12">' +
+      '<line x1="2" y1="2.5" x2="26" y2="2.5" stroke="currentColor" stroke-width="0.95"/>' +
+      '<line x1="0" y1="6" x2="28" y2="6" stroke="currentColor" stroke-width="0.95"/>' +
+      '<line x1="2" y1="9.5" x2="26" y2="9.5" stroke="currentColor" stroke-width="0.95"/>' +
+    '</svg>';
+
+  // Ornate Islamic frieze + curled black architectural bracket matching image_2.png (p. 549)
+  const CHAPTER_BANNER_HTML = (function() {
+    let arches = '';
+    for (let x = 52; x <= 398; x += 14) {
+      arches += '<path d="M' + x + ',19 L' + x + ',11 Q' + (x + 3.5) + ',5 ' + (x + 7) + ',2 Q' + (x + 10.5) + ',5 ' + (x + 14) + ',11 L' + (x + 14) + ',19 Z" fill="none" stroke="currentColor" stroke-width="0.95"/>' +
+                '<circle cx="' + (x + 7) + '" cy="13.5" r="1.5" fill="currentColor"/>';
+    }
+    const rosette = (cx, cy, r) => {
+      let p = '<g transform="translate(' + cx + ',' + cy + ')"><circle r="' + (r * 0.25) + '" fill="currentColor"/>';
+      for (let a = 0; a < 360; a += 45) {
+        p += '<path d="M0,-' + (r * 0.28) + ' C' + (r * 0.22) + ',-' + (r * 0.65) + ' ' + (r * 0.2) + ',-' + r + ' 0,-' + r + ' C-' + (r * 0.2) + ',-' + r + ' -' + (r * 0.22) + ',-' + (r * 0.65) + ' 0,-' + (r * 0.28) + ' Z" fill="currentColor" transform="rotate(' + a + ')"/>';
+      }
+      return p + '</g>';
+    };
+    const medLeft  = rosette(26, 11, 10) + rosette(14, 41, 7.5);
+    const medRight = rosette(434, 11, 10) + rosette(446, 41, 7.5);
+    return '<div class="chapter-banner"><svg class="chapter-banner-svg" viewBox="0 0 460 54">' +
+      '<line x1="48" y1="19" x2="412" y2="19" stroke="currentColor" stroke-width="1"/>' +
+      '<line x1="48" y1="2.5" x2="412" y2="2.5" stroke="currentColor" stroke-width="0.6"/>' +
+      arches + medLeft + medRight +
+      '<path d="M8,50 C2,50 2,42 7,42 L7,25 L453,25 L453,42 C458,42 458,50 452,50" fill="none" stroke="#111111" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M23,31 L437,31" fill="none" stroke="currentColor" stroke-width="0.65" stroke-dasharray="2,3"/>' +
+    '</svg></div>';
+  })();
+
+  // Symmetric black arabesque center medallion + flanking accent rosettes matching image_2.png (p. 548)
+  const TAILPIECE_HTML = (function() {
+    const ros = (cx, cy) => {
+      let s = '<g transform="translate(' + cx + ',' + cy + ')"><circle r="2.2" fill="currentColor"/>';
+      for (let a = 0; a < 360; a += 45) {
+        s += '<path d="M0,-2.6 C1.8,-5.5 1.8,-8.2 0,-8.8 C-1.8,-8.2 -1.8,-5.5 0,-2.6 Z" fill="currentColor" transform="rotate(' + a + ')"/>';
+      }
+      return s + '</g>';
+    };
+    const centerPalmette =
+      '<g transform="translate(110,13)" fill="#111111">' +
+        '<path d="M0,-10 C5,-5 12,-5 22,0 C12,5 5,5 0,10 C-5,5 -12,5 -22,0 C-12,-5 -5,-5 0,-10 Z"/>' +
+        '<circle r="3.4" fill="#ffffff"/>' +
+        '<circle r="1.7" fill="#111111"/>' +
+        '<circle cx="-11" cy="0" r="1.4" fill="#ffffff"/>' +
+        '<circle cx="11" cy="0" r="1.4" fill="#ffffff"/>' +
+        '<circle cx="-27" cy="0" r="1.8" fill="#111111"/>' +
+        '<circle cx="27" cy="0" r="1.8" fill="#111111"/>' +
+      '</g>';
+    return '<div class="tailpiece-row"><svg class="tailpiece-svg" viewBox="0 0 220 26">' +
+      ros(42, 13) + centerPalmette + ros(178, 13) +
+    '</svg></div>';
+  })();
 
   function tokenizeHtml(htmlStr) {
     const tmp = document.createElement('div');
@@ -142,6 +197,11 @@ window.renderFullBook = async function(data, edition) {
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         const tag = node.tagName.toLowerCase();
         const cls = node.getAttribute('class') || '';
+        if (cls.split(/\\s+/).includes('ayah-ref')) {
+          const refTxt = node.textContent.trim().replace(/\\s+/g, '\\u00A0');
+          if (refTxt) atoms.push({ text: refTxt, wrap: [...wrap, { tag, cls }], trail: '' });
+          return;
+        }
         walkChildren(node, [...wrap, { tag, cls }]);
       }
     }
@@ -182,20 +242,22 @@ window.renderFullBook = async function(data, edition) {
     return out;
   }
 
+  const BOOK_HDR_TITLE = 'الدُّرَرُ الجَوْهَرِيَّةُ عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ';
+  let activeSectionTitle = 'مُقَدِّمَةُ الْكِتَابِ';
   let pageCounter = 0;
-  function makeHeaderHtml(pNum, centerText) {
+
+  function makeHeaderHtml(pNum, sectionTitleOverride = null) {
     const eNum = toE(pNum);
     const isEven = (pNum % 2 === 0);
+    const badgeHtml = '<span class="rh-badge-wrap">' + WING_SVG + '<span class="rh-pill">' + eNum + '</span>' + WING_SVG + '</span>';
+    const titleStr = isEven ? BOOK_HDR_TITLE : (sectionTitleOverride || activeSectionTitle || BOOK_HDR_TITLE);
+    const titleHtml = '<span class="rh-title">' + esc(titleStr) + '</span>';
+    // In RTL flex: first child sits on RIGHT edge, second child sits on LEFT edge.
+    // Even (left page of open spread): inner-right = badge, outer-left = Book Title.
+    // Odd (right page of open spread): outer-right = Active Section Title, inner-left = badge.
     return '<div class="running-header">' +
-      '<span class="rh-side rh-right">' + (isEven ? eNum : '') + '</span>' +
-      '<span class="rh-center">' + esc(centerText) + '</span>' +
-      '<span class="rh-side rh-left">' + (!isEven ? eNum : '') + '</span>' +
+      (isEven ? (badgeHtml + titleHtml) : (titleHtml + badgeHtml)) +
     '</div>';
-  }
-
-  function getHeaderTitle(pNum) {
-    if (pNum % 2 === 0) return '« الدُّرَرُ الجَوْهَرِيَّةُ عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ »';
-    return 'لِفَضِيلَةِ الشَّيْخِ أَحْمَدَ الْجَوْهَرِيِّ';
   }
 
   function createPage({ framed = false, cover = false, skipHeader = false, centerTitle = null } = {}) {
@@ -212,7 +274,7 @@ window.renderFullBook = async function(data, edition) {
       return { el, bodyFrame: null, pNum };
     }
     if (!skipHeader) {
-      el.innerHTML = makeHeaderHtml(pNum, centerTitle || getHeaderTitle(pNum));
+      el.innerHTML = makeHeaderHtml(pNum, centerTitle);
     }
     const bodyFrame = document.createElement('div');
     bodyFrame.className = 'body-frame';
@@ -222,12 +284,22 @@ window.renderFullBook = async function(data, edition) {
       el,
       bodyFrame,
       pNum,
+      headerEl: el.querySelector('.running-header'),
       pageFnNum: 0,
       pageGlossaryIds: new Set(),
       pageGlossaryTerms: new Set(),
       lessonNoteText: null,
       glossaryNotes: [],
     };
+  }
+
+  function setPageOddHeaderTitle(pageObj, rawTitle) {
+    if (!pageObj || !pageObj.headerEl || pageObj.pNum % 2 === 0) return;
+    const cleaned = String(rawTitle || '').replace(/^\\[\\s*|\\s*\\]$/g, '').trim();
+    if (!cleaned) return;
+    activeSectionTitle = cleaned;
+    const tEl = pageObj.headerEl.querySelector('.rh-title');
+    if (tEl) tEl.textContent = cleaned;
   }
 
   // ==================== 1. FRONT MATTER ====================
@@ -243,10 +315,10 @@ window.renderFullBook = async function(data, edition) {
   {
     const { bodyFrame } = createPage({ framed: true, skipHeader: true });
     const p2Desc = isEdited
-      ? 'تَفْرِيغٌ مُحَرَّرٌ لِمُحَاضَرَاتِ الشَّيْخِ فِي شَرْحِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ'
+      ? 'تَفْرِيغٌ مُحَرَّرٌ مُهَذَّبٌ لِمُحَاضَرَاتِ الشَّيْخِ فِي شَرْحِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ'
       : 'التَّفْرِيغُ الْحَرْفِيُّ الْكَامِلُ لِدُرُوسِ شَرْحِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ';
     const p2Right = isEdited
-      ? '٧ مُحَاضَرَاتٍ مُحَرَّرَةٍ'
+      ? '٧ مُحَاضَرَاتٍ مُهَذَّبَةٍ'
       : '٧ لِقَاءَاتٍ صَوْتِيَّةٍ كَامِلَةٍ';
     bodyFrame.innerHTML =
       '<div class="frame-outer"><div class="frame-inner">' +
@@ -280,12 +352,12 @@ window.renderFullBook = async function(data, edition) {
     const { bodyFrame } = createPage({ framed: true, skipHeader: true });
     const srcText = data.glossary_source || 'مُسْتَفَادٌ مِنْ شُرُوحِ الطَّحَاوِيَّةِ وَمَعَاجِمِ غَرِيبِ الأَلْفَاظِ وَالتَّعْرِيفَاتِ (ابن أبي العز، البياضي، لسان العرب، مفردات الراغب)';
     const p3Sub = isEdited
-      ? '<span style="font-size: 11.5pt; font-weight: 400;">تَفْرِيغٌ مُحَرَّرٌ لِمُحَاضَرَاتِ الشَّيْخِ فِي شَرْحِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ</span><br>' +
+      ? '<span style="font-size: 11.5pt; font-weight: 400;">تَفْرِيغٌ مُحَرَّرٌ مُهَذَّبٌ لِمُحَاضَرَاتِ الشَّيْخِ فِي شَرْحِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ</span><br>' +
         '<span style="font-size: 11pt; font-weight: 400;">( الْمُحَاضَرَاتُ : ١ – ٧ )</span>'
       : '<span style="font-size: 11.5pt; font-weight: 400;">تَفْرِيغٌ حَرْفِيٌّ كَامِلٌ مُرَاجَعٌ لِدُرُوسِ شَرْحِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ</span><br>' +
         '<span style="font-size: 11pt; font-weight: 400;">( اللِّقَاءَاتُ : ١ – ٧ )</span>';
     const p3Disc = isEdited
-      ? 'أُعِدَّ هَذَا الْكِتَابُ بِتَفْرِيغِ مُحَاضَرَاتِ الشَّيْخِ الشَّارِحِ وَتَحْرِيرِهَا بِالْعَرَبِيَّةِ الْفُصْحَى الْمُيَسَّرَةِ، وَتَنْقِيَتِهَا مِنَ الْعَامِّيَّةِ وَفَوَاتِحِ الدُّرُوسِ وَخَوَاتِمِهَا وَأَسْئِلَةِ الْحُضُورِ، مَعَ الأَمَانَةِ التَّامَّةِ فِي حِفْظِ الْمَعَانِي وَالأَحْكَامِ دُونَ تَغْيِيرٍ أَوْ زِيَادَةٍ.'
+      ? 'أُعِدَّ هَذَا الْكِتَابُ بِتَفْرِيغِ مُحَاضَرَاتِ الشَّيْخِ الشَّارِحِ بِإِثْبَاتِ كَلاَمِهِ كَامِلاً بِلَفْظِهِ دُونَ تَبْدِيلٍ أَوِ اخْتِصَارٍ، مَعَ الاقْتِصَارِ عَلَى مُقَدِّمَةِ اللِّقَاءِ الأَوَّلِ وَخَاتِمَةِ اللِّقَاءِ الأَخِيرِ وَتَهْذِيبِ التَّكْرَارِ اللَّفْظِيِّ الْمُتَتَابِعِ فَحَسْبُ.'
       : 'أُعِدَّ هَذَا الْكِتَابُ بِإِثْبَاتِ كَلاَمِ الشَّيْخِ الشَّارِحِ كَامِلاً كَمَا أُلْقِيَ دُونَ حَذْفٍ أَوْ اخْتِصَارٍ ،<br>' +
         'مَعَ إِثْبَاتِ مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ مَضْبُوطاً بِالشَّكْلِ أَعْلَى الصَّفْحَةِ مَفْصُولاً بِخَطٍّ أُفُقِيٍّ عَنِ الشَّرْحِ أَسْفَلَهُ';
     const p3Syms = isEdited
@@ -318,15 +390,14 @@ window.renderFullBook = async function(data, edition) {
   }
 
 
-  // Page 4: Basmalah Opening Plate
+  // Page 4: Calligraphic Basmalah PNG Plate
   {
     const { bodyFrame } = createPage({ framed: true, skipHeader: true });
+    const basmalahUrl = window.__BASMALAH_URL || ('file:///home/antigravity/ssssshyu53/al-durar-al-jawhariyyah-tahawiyyah/book_engine/' + (edition === 'two-color' ? 'basmalah_plum.png' : 'basmalah.png'));
     bodyFrame.innerHTML =
       '<div class="frame-outer"><div class="frame-inner" style="justify-content:center;">' +
-        '<div class="basmalah-plate-text">' +
-          'بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ' +
-        '</div>' +
-        '<div style="margin-top:8pt;">' + THREE_STARS_HTML + '</div>' +
+        '<img class="basmalah-plate-img" src="' + basmalahUrl + '" alt="بسم الله الرحمن الرحيم">' +
+        '<div style="margin-top:16pt;">' + TAILPIECE_HTML + '</div>' +
       '</div></div>';
   }
 
@@ -471,9 +542,16 @@ window.renderFullBook = async function(data, edition) {
       lines[li] = s;
     }
 
+    const wrapMatnAyahs = (s) => {
+      return s
+        .replace(/(﴿[^﴾]+﴾)/g, '<span class="ayah">$1</span>')
+        .replace(/(\\[[^\\]:]+:\\s*[٠-٩\\-]+\\])/g, '<span class="ayah-ref">$1</span>');
+    };
+
     let h = '';
     let anchorPlaced = false;
     if (u.toc_book) {
+      h += CHAPTER_BANNER_HTML;
       h += '<div class="matn-book-title" id="unit-' + esc(u.id) + '">' + esc(u.toc_book) + '</div>';
       anchorPlaced = true;
     }
@@ -486,13 +564,28 @@ window.renderFullBook = async function(data, edition) {
       const line = lines[i];
       const anchorAttr = (!anchorPlaced && i === 0) ? ' id="unit-' + esc(u.id) + '"' : '';
       const isBasmalah = /^بِسْمِ\\s+اللَّ?هِ\\s+الرَّحْم[َٰـ]*نِ\\s+الرَّحِيمِ$/.test(line.trim());
-      h += '<p class="' + (isBasmalah ? 'matn-basmalah' : 'matn-p') + '"' + anchorAttr + '>' + line + '</p>';
+      h += '<p class="' + (isBasmalah ? 'matn-basmalah' : 'matn-p') + '"' + anchorAttr + '>' + wrapMatnAyahs(line) + '</p>';
       anchorPlaced = true;
     }
     if (u.fasl_end) {
-      h += THREE_STARS_HTML;
+      h += TAILPIECE_HTML;
     }
     return h;
+  }
+
+  const ayahRefLookup = new Map();
+  for (const u of data.units) {
+    for (const pHtml of (u.sharh_paras_html || [])) {
+      const tmpA = document.createElement('div');
+      tmpA.innerHTML = pHtml;
+      for (const sp of tmpA.querySelectorAll('.ayah')) {
+        const cleanA = sp.textContent.replace(/[﴿﴾]/g, '').replace(/\\s+/g, ' ').trim();
+        const nxt = sp.nextElementSibling;
+        if (cleanA && nxt && nxt.classList.contains('ayah-ref') && !ayahRefLookup.has(cleanA)) {
+          ayahRefLookup.set(cleanA, nxt.textContent.trim());
+        }
+      }
+    }
   }
 
   function recordAyahsOnPage(htmlChunk, pNum) {
@@ -524,10 +617,18 @@ window.renderFullBook = async function(data, edition) {
     if (ui % 8 === 0) await new Promise(r => setTimeout(r, 0));
     const u = data.units[ui];
 
+    // Update running odd-page section header before opening new unit page
+    const secLabel = u.toc_fasl || u.toc_book || '';
+    if (secLabel) {
+      activeSectionTitle = secLabel.replace(/^\\[\\s*|\\s*\\]$/g, '').trim();
+    }
+
     // STRICT SEPARATION: Every body unit (!u.is_preface) ALWAYS starts cleanly at the top of its own fresh page!
     // Never mix previous unit's continuation dots or Sharh tail with the next Matn unit.
     if (curPageObj.unitCountOnPage > 0) {
       curPageObj = u.is_preface ? openPrefacePage() : openBodyPage();
+    } else if (secLabel) {
+      setPageOddHeaderTitle(curPageObj, secLabel);
     }
 
     if (!(u.lesson_num in lessonStartPage)) {
@@ -541,12 +642,16 @@ window.renderFullBook = async function(data, edition) {
     }
 
     if (u.is_preface) {
-      curPageObj.sharhZone.insertAdjacentHTML('beforeend', '<div class="preface-h" id="unit-' + esc(u.id) + '">' + esc(u.toc_fasl || 'مُقَدِّمَةُ الْكِتَابِ') + '</div>');
+      curPageObj.sharhZone.insertAdjacentHTML('beforeend',
+        CHAPTER_BANNER_HTML +
+        '<div class="preface-h" id="unit-' + esc(u.id) + '">' + esc(u.toc_fasl || 'مُقَدِّمَةُ الْكِتَابِ') + '</div>'
+      );
     } else {
       const matnHtml = buildMatnHtmlForUnit(u, curPageObj, false);
       curPageObj.matnZone.insertAdjacentHTML('beforeend', matnHtml);
+      recordAyahsOnPage(matnHtml, curPageObj.pNum);
     }
-    if (u.lesson_note) {
+    if (!isEdited && u.lesson_note) {
       curPageObj.lessonNoteText = u.lesson_note;
     }
     renderPageFootnotes(curPageObj);
@@ -606,12 +711,12 @@ window.renderFullBook = async function(data, edition) {
     }
 
     if (u.fasl_end) {
-      curPageObj.sharhZone.insertAdjacentHTML('beforeend', THREE_STARS_HTML);
+      curPageObj.sharhZone.insertAdjacentHTML('beforeend', TAILPIECE_HTML);
       if (!fitsPage(curPageObj)) {
-        const starsEl = curPageObj.sharhZone.lastElementChild;
-        if (starsEl) starsEl.style.margin = '1pt 0';
+        const tailEl = curPageObj.sharhZone.lastElementChild;
+        if (tailEl) tailEl.style.margin = '1pt 0';
         if (!fitsPage(curPageObj)) {
-          curPageObj.sharhZone.removeChild(starsEl);
+          curPageObj.sharhZone.removeChild(tailEl);
         }
       }
     }
@@ -624,6 +729,7 @@ window.renderFullBook = async function(data, edition) {
     let ayPage = createPage({ centerTitle: 'فَهْرَسُ الآيَاتِ الْقُرْآنِيَّةِ' });
     ayahStartPage = ayPage.pNum;
     ayPage.bodyFrame.innerHTML =
+      CHAPTER_BANNER_HTML +
       '<div class="toc-page-title">فَهْرَسُ الآيَاتِ الْقُرْآنِيَّةِ</div>' +
       '<div class="index-col-head"><span>الآيَةُ الْكَرِيمَةُ</span><span>الصَّفْحَةُ</span></div>' +
       '<div id="ayah-list-box"></div>';
@@ -632,9 +738,11 @@ window.renderFullBook = async function(data, edition) {
     for (const [ayahTxt, pgSet] of ayahList) {
       const pgs = Array.from(pgSet).sort((a,b) => a-b);
       const pgLinks = pgs.map(p => '<a href="#pg-' + p + '">' + toE(p) + '</a>').join(' ، ');
+      const refStr = ayahRefLookup.get(ayahTxt);
+      const refHtml = refStr ? ' <span class="ayah-ref">' + esc(refStr.replace(/\\s+/g, '\\u00A0')) + '</span>' : '';
       const row = document.createElement('div');
       row.className = 'ayah-idx-row';
-      row.innerHTML = '<span class="ayah-idx-text">﴿' + esc(ayahTxt) + '﴾</span>' +
+      row.innerHTML = '<span class="ayah-idx-text">﴿' + esc(ayahTxt) + '﴾' + refHtml + '</span>' +
                       '<span class="ayah-idx-pages">' + pgLinks + '</span>';
       ayBox.appendChild(row);
       const lastAy = ayBox.lastElementChild;
@@ -670,6 +778,7 @@ window.renderFullBook = async function(data, edition) {
     const pObj = createPage({ centerTitle: 'اَلْفَهْرَسُ الْعَامُّ' });
     const titleStr = tocPgCount === 1 ? 'اَلْفَهْرَسُ الْعَامُّ' : 'تَابِعُ الْفَهْرَسِ الْعَامِّ';
     pObj.bodyFrame.innerHTML =
+      (tocPgCount === 1 ? CHAPTER_BANNER_HTML : '') +
       '<div class="toc-page-title">' + titleStr + '</div>' +
       '<div class="toc-two-col">' +
         '<div class="toc-col toc-col-right"></div>' +
@@ -742,6 +851,7 @@ async function main() {
 window.__BOOK_DATA = ${JSON.stringify(BOOK_DATA)};
 window.__BOOK_EDITION = ${JSON.stringify(EDITION)};
 window.__BOOK_COVER_URL = ${JSON.stringify('file://' + path.join(__ENG, 'cover_front.png'))};
+window.__BASMALAH_URL = ${JSON.stringify('file://' + path.join(__ENG, EDITION === 'two-color' ? 'basmalah_plum.png' : 'basmalah.png'))};
 ${PAGINATE_FN_SRC}
 window.__BOOK_RESULT = null;
 window.__BOOK_ERROR = null;

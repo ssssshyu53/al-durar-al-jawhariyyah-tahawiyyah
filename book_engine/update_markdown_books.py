@@ -50,7 +50,7 @@ full_volume_lines = [
     "",
     f"**المتن:** {book_json.get('author_matn', '')}  ",
     f"**الشرح:** {book_json.get('author_sharh', '')}  ",
-    f"**النسخة:** {'النسخة المحررة المصاغة بالعربية الفصحى الميسرة' if IS_EDITED else 'النسخة الحرفية الكاملة كما ألقيت'}  ",
+    f"**النسخة:** {'النسخة المحررة المهذبة (بكلام الشيخ بلفظه دون اختصار مع الاقتصار على مقدمة اللقاء الأول وخاتمة الأخير وتهذيب التكرار المتتابع)' if IS_EDITED else 'النسخة الحرفية الكاملة كما ألقيت'}  ",
     "",
     "---",
     "",
@@ -87,7 +87,7 @@ for lnum, fname, full_title, short_title in LESSON_SPECS:
             lesson_md.append("")
 
         for p_html in u.get('sharh_paras_html', []):
-            p_text = re.sub(r'<span class="ayah">([^<]+)</span>', r'\1', p_html)
+            p_text = re.sub(r'<span class="ayah(?:-ref)?">([^<]+)</span>', r'\1', p_html)
             p_text = re.sub(r'<strong>([^<]+)</strong>', r'**\1**', p_text)
             p_text = re.sub(r'<[^>]+>', '', p_text)
             lesson_md.append(p_text.strip())

@@ -61,8 +61,9 @@ def verify_lesson(lnum: int) -> bool:
             print(f"L{lnum:02d} [FAIL]: Forbidden token found: {forb}")
             return False
 
+    clean_for_wc = re.sub(r"\[[^\]:]+:\s*[٠-٩\-]+\]", "", clean_body)
     raw_words = [norm_ar(w) for w in raw_body.split() if norm_ar(w)]
-    clean_words = [norm_ar(w) for w in clean_body.split() if norm_ar(w)]
+    clean_words = [norm_ar(w) for w in clean_for_wc.split() if norm_ar(w)]
     ratio = (len(clean_words) / len(raw_words) * 100.0) if raw_words else 100.0
 
     status = "PASS" if (len(units) >= 3 and ratio >= 95.0 and not latin) else "FAIL"

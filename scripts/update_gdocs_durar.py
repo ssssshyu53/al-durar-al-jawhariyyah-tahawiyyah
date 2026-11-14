@@ -33,7 +33,7 @@ def to_ar(n: int) -> str:
 
 
 def html_para_to_runs(p_html: str):
-    pattern = re.compile(r'(<strong>.*?</strong>|<span class="ayah">.*?</span>)', flags=re.S)
+    pattern = re.compile(r'(<strong>.*?</strong>|<span class="ayah(?:-ref)?">.*?</span>)', flags=re.S)
     parts = pattern.split(p_html)
     runs = []
     for part in parts:
@@ -41,15 +41,21 @@ def html_para_to_runs(p_html: str):
             continue
         is_bold = False
         color = "#202124"
+        font_sz = 11.5
         txt = part
         if part.startswith("<strong>") and part.endswith("</strong>"):
             is_bold = True
-            color = "#9b111e"
+            color = "#96267e"
             txt = part[len("<strong>"):-len("</strong>")]
         elif part.startswith('<span class="ayah">') and part.endswith("</span>"):
             is_bold = True
             color = "#111111"
             txt = part[len('<span class="ayah">'):-len("</span>")]
+        elif part.startswith('<span class="ayah-ref">') and part.endswith("</span>"):
+            is_bold = False
+            color = "#5F6368"
+            font_sz = 8.8
+            txt = part[len('<span class="ayah-ref">'):-len("</span>")]
         txt = re.sub(r"<[^>]+>", "", txt)
         txt = (
             txt.replace("&quot;", '"')
@@ -63,7 +69,7 @@ def html_para_to_runs(p_html: str):
                 "bold": is_bold,
                 "italic": False,
                 "font_family": "Amiri",
-                "font_size": 11.5,
+                "font_size": font_sz,
                 "text_color": color,
             })
     if not runs:
@@ -96,7 +102,7 @@ def build_header_ops(title_main: str, subtitle_line: str, method_desc: str, glos
             "font_size": 20,
             "bold": True,
             "alignment": "CENTER",
-            "text_color": "#9b111e",
+            "text_color": "#96267e",
         },
         {
             "op": "heading",
@@ -106,7 +112,7 @@ def build_header_ops(title_main: str, subtitle_line: str, method_desc: str, glos
             "font_size": 24,
             "bold": True,
             "alignment": "CENTER",
-            "text_color": "#9b111e",
+            "text_color": "#96267e",
             "space_above": 4,
             "space_below": 4,
         },
@@ -126,7 +132,7 @@ def build_header_ops(title_main: str, subtitle_line: str, method_desc: str, glos
             "font_size": 13,
             "bold": True,
             "alignment": "CENTER",
-            "text_color": "#9b111e",
+            "text_color": "#96267e",
         },
         {
             "op": "append",
@@ -146,7 +152,7 @@ def build_header_ops(title_main: str, subtitle_line: str, method_desc: str, glos
             "paragraph_bg_color": "#FAF7EF",
             "runs": [
                 {"text": method_desc + "\n"},
-                {"text": "مَنْهَجُ الْحَوَاشِي وَغَرِيبِ الْمَتْنِ: ", "bold": True, "text_color": "#9b111e"},
+                {"text": "مَنْهَجُ الْحَوَاشِي وَغَرِيبِ الْمَتْنِ: ", "bold": True, "text_color": "#96267e"},
                 {"text": glossary_source + "\n"},
                 {"text": "المصدر الصوتي: ", "bold": True},
                 {"text": "سلسلة دروس شرح العقيدة الطحاوية (يوتيوب — ٧ لقاءات)", "text_color": "#1a73e8", "url": YT_PLAYLIST},
@@ -181,7 +187,7 @@ def build_unit_ops(units_slice):
                 "font_size": 16,
                 "bold": True,
                 "alignment": "CENTER",
-                "text_color": "#9b111e",
+                "text_color": "#96267e",
                 "space_above": 12,
                 "space_below": 4,
             })
@@ -213,7 +219,7 @@ def build_unit_ops(units_slice):
                 "font_size": 12,
                 "bold": True,
                 "alignment": "CENTER",
-                "text_color": "#9b111e",
+                "text_color": "#96267e",
             })
             continue
 
@@ -226,7 +232,7 @@ def build_unit_ops(units_slice):
                 "font_size": 18,
                 "bold": True,
                 "alignment": "CENTER",
-                "text_color": "#9b111e",
+                "text_color": "#96267e",
                 "space_above": 14,
                 "space_below": 4,
             })
@@ -239,7 +245,7 @@ def build_unit_ops(units_slice):
                 "font_size": 14.5,
                 "bold": True,
                 "alignment": "CENTER",
-                "text_color": "#9b111e",
+                "text_color": "#96267e",
                 "space_above": 10,
                 "space_below": 3,
             })
@@ -276,7 +282,7 @@ def build_unit_ops(units_slice):
                     "bold": True,
                     "alignment": "CENTER",
                     "paragraph_bg_color": "#FAF7EF",
-                    "text_color": "#9b111e",
+                    "text_color": "#96267e",
                 })
             else:
                 ops.append({
@@ -288,7 +294,7 @@ def build_unit_ops(units_slice):
                     "alignment": "CENTER" if is_basmalah else "JUSTIFIED",
                     "indent_first_line": 0 if is_basmalah else 18,
                     "paragraph_bg_color": "#FAF7EF",
-                    "text_color": "#9b111e",
+                    "text_color": "#96267e",
                 })
 
         ops.append({"op": "horizontal-rule"})
@@ -308,7 +314,7 @@ def build_unit_ops(units_slice):
 
         # Unit Gharib Glosses Box (if any)
         if glosses:
-            gloss_runs = [{"text": "غَرِيبُ الْمَتْنِ:  ", "bold": True, "text_color": "#9b111e"}]
+            gloss_runs = [{"text": "غَرِيبُ الْمَتْنِ:  ", "bold": True, "text_color": "#96267e"}]
             for gi, gl in enumerate(glosses, 1):
                 gloss_runs.append({
                     "text": f"({to_ar(gi)}) {gl['gloss']}",
@@ -334,7 +340,7 @@ def build_unit_ops(units_slice):
             "font_size": 11.5,
             "bold": True,
             "alignment": "CENTER",
-            "text_color": "#9b111e",
+            "text_color": "#96267e",
         })
     return ops
 
@@ -443,8 +449,8 @@ def main():
         ids["edited_doc_id"],
         "book_data_edited.json",
         "الدُّرَرُ الجَوْهَرِيَّةُ عَلَى مَتْنِ العَقِيدَةِ الطَّحَاوِيَّةِ — النُّسْخَةُ المُحَرَّرَةُ",
-        "( شَرْحُ مَتْنِ بَيَانِ عَقِيدَةِ أَهْلِ السُّنَّةِ وَالْجَمَاعَةِ ) — تَفْرِيغٌ مُحَرَّرٌ لِمُحَاضَرَاتِ الشَّيْخِ (٧ مُحَاضَرَاتٍ)",
-        "تفريغ محرر لمحاضرات الشيخ في شرح متن العقيدة الطحاوية بالعربية الفصحى الميسرة مع تنقيتها من العامية مع الأمانة التامة في المعنى.",
+        "( شَرْحُ مَتْنِ بَيَانِ عَقِيدَةِ أَهْلِ السُّنَّةِ وَالْجَمَاعَةِ ) — تَفْرِيغٌ مُحَرَّرٌ مُهَذَّبٌ لِمُحَاضَرَاتِ الشَّيْخِ (٧ مُحَاضَرَاتٍ)",
+        "تفريغ محرر مهذب لمحاضرات الشيخ في شرح متن العقيدة الطحاوية بإثبات كلامه كاملا بلفظه دون تبديل أو اختصار مع الاقتصار على مقدمة اللقاء الأول وخاتمة الأخير وتهذيب التكرار اللفظي المتتابع.",
     )
     ids["edited_url"] = url_edit
 

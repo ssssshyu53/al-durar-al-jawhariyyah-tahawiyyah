@@ -1,54 +1,21 @@
 #!/usr/bin/env python3
-"""Validate edited Tahawiyyah lessons against clean_lessons structure, Quranic ayahs, colloquialisms, and fidelity."""
+"""
+Validate edited Tahawiyyah lessons against clean_lessons structure, Quranic ayahs,
+L02-L07 opening-intro removal, L01-L06 closing-farewell removal, L01 intro & L07
+closing preservation, and >= 92% verbatim Shaykh word retention (no summarizing/paraphrasing).
+"""
 import os
 import re
 import sys
 
 _REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-COLLOQUIAL_TOKENS = [
-    r'(?<!\w)إيه(?!\w)',
-    r'(?<!\w)كده(?!\w)',
-    r'(?<!\w)عشان(?!\w)',
-    r'(?<!\w)علشان(?!\w)',
-    r'(?<!\w)بتاع\w*',
-    r'(?<!\w)بتوع(?!\w)',
-    r'(?<!\w)برضه(?!\w)',
-    r'(?<!\w)برضو(?!\w)',
-    r'(?<!\w)أهو(?!\w)',
-    r'(?<!\w)لسه(?!\w)',
-    r'(?<!\w)شوية(?!\w)',
-    r'(?<!\w)خلينا(?!\w)',
-    r'(?<!\w)آدي(?!\w)',
-    r'(?<!\w)دول(?!\w)',
-    r'(?<!\w)ده(?!\w)',
-    r'(?<!\w)دي(?!\w)',
-    r'(?<!\w)مش(?!\w)',
-    r'(?<!\w)مفيش(?!\w)',
-    r'(?<!\w)ما فيش(?!\w)',
-    r'(?<!\w)اللي(?!\w)',
-    r'(?<!\w)كتير(?!\w)',
-    r'(?<!\w)ما ينفعش(?!\w)',
-    r'(?<!\w)ينفعش(?!\w)',
-    r'(?<!\w)هقول\w*',
-    r'(?<!\w)هنقول\w*',
-    r'(?<!\w)هعمل\w*',
-    r'(?<!\w)حاجات(?!\w)',
-    r'(?<!\w)بص(?!\w)',
-    r'(?<!\w)شوف(?!\w)',
-    r'(?<!\w)خالص(?!\w)',
-    r'(?<!\w)طب(?!\w)',
-    r'(?<!\w)زي(?!\w)',
-    r'(?:^|\.\s+)طيب[،,]',
-    r'مرحباً بكم أيها الإخوة',
-    r'اللقاء القادم',
-    r'المرة القادمة',
-    r'الدرس القادم',
-    r'هستأذنكم',
-    r'سبحانك اللهم ربنا وبحمدك',
-    r'نكتفي بهذا',
-]
-COLLOQUIAL_RX = re.compile('|'.join(COLLOQUIAL_TOKENS))
+VIDEO_OPENING_RX = re.compile(
+    r'أعوذ بالله السميع العليم|فمرحب[اً]? بكم أيها (?:الإخوة|الأحبة)|وكنا قد (?:وقفنا|وصلنا) عند'
+)
+VIDEO_CLOSING_RX = re.compile(
+    r'لقاءنا القادم|لقائنا القادم|نقف هنا إن شاء الله|نبدأ منه بمشيئة الله|غدًا بمشيئة الله|وصل[ّ]? اللهم على نبينا محمد|وصلى الله على نبينا محمد، والحمد لله'
+)
 LATIN_RX = re.compile(r'[A-Za-z]')
 
 
@@ -91,13 +58,12 @@ def check_lesson(lnum):
                 errors.append(f"U{idx:02d} {k} mismatch")
         if not es:
             errors.append(f"U{idx:02d} empty SHARH")
-        c_ayahs = re.findall(r'﴿[^﴾]+﴾', cs)
-        e_ayahs = re.findall(r'﴿[^﴾]+﴾', es)
-        if c_ayahs != e_ayahs:
-            errors.append(f"U{idx:02d} Ayah mismatch: clean={c_ayahs} vs edited={e_ayahs}")
-        hits = COLLOQUIAL_RX.findall(es)
-        if hits:
-            errors.append(f"U{idx:02d} remaining colloquial/meta tokens: {hits[:8]}")
+        c_ayah_set = set(re.findall(r'﴿[^﴾]+﴾', cs))
+        e_ayah_set = set(re.findall(r'﴿[^﴾]+﴾', es))
+        missing_ay = {a for a in (c_ayah_set - e_ayah_set) if not any(a[1:-1] in ea for ea in e_ayah_set)}
+        extra_ay = e_ayah_set - c_ayah_set
+        if missing_ay or extra_ay:
+            errors.append(f"U{idx:02d} Ayah set mismatch: missing={missing_ay} extra={extra_ay}")
         if LATIN_RX.search(es):
             errors.append(f"U{idx:02d} Latin chars found")
         for forb in ['الدكتور', 'د. أحمد', 'دار ابن حزم', 'أبي شجاع', 'تيسير الانتفاع']:
@@ -106,9 +72,29 @@ def check_lesson(lnum):
         tot_c_words += len(cs.split())
         tot_e_words += len(es.split())
 
+    # Check video intro preservation (L01) vs stripping (L02-L07)
+    u1_sharh = eu[0][1]
+    if lnum == 1:
+        if "أعوذ بالله السميع العليم" not in u1_sharh:
+            errors.append("L01 opening intro missing (must be preserved)")
+    else:
+        hits_open = VIDEO_OPENING_RX.findall(u1_sharh[:600])
+        if hits_open:
+            errors.append(f"U01 leftover video intro: {hits_open}")
+
+    # Check video closing preservation (L07) vs stripping (L01-L06)
+    ul_sharh = eu[-1][1]
+    if lnum == 7:
+        if "نسأل الله تبارك وتعالى أن يعلمنا من دينه ما ينفعنا" not in ul_sharh:
+            errors.append("L07 closing du'a missing (must be preserved)")
+    else:
+        hits_close = VIDEO_CLOSING_RX.findall(ul_sharh[-400:])
+        if hits_close:
+            errors.append(f"U{len(eu):02d} leftover video closing: {hits_close}")
+
     ratio = tot_e_words / max(1, tot_c_words)
-    if ratio < 0.65:
-        errors.append(f"Word retention too low ({ratio:.2%}: {tot_e_words}/{tot_c_words}) - possible over-summarization")
+    if ratio < 0.92:
+        errors.append(f"Word retention too low ({ratio:.2%}: {tot_e_words}/{tot_c_words}) - unwanted deletion/summarization")
     if errors:
         return False, f"L{lnum:02d} FAIL ({tot_e_words}/{tot_c_words}, {ratio:.1%}): " + " | ".join(errors)
     return True, f"L{lnum:02d} PASS ({len(eu)} units, {tot_e_words}/{tot_c_words} words = {ratio:.1%})"

@@ -15,8 +15,13 @@ def format_sharh_inline_html(text: str) -> str:
     esc = html.escape(text)
     # Bold **...** (handle across inline spans safely)
     esc = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', esc, flags=re.S)
-    # Quranic Ayahs ﴿...﴾ -> styled with AmiriQuran
-    esc = re.sub(r'(﴿[^﴾]+﴾)', r'<span class="ayah">\1</span>', esc)
+    # Quranic Ayahs ﴿...﴾ + optional [السورة: الآية] -> styled with AmiriQuran & smaller ref badge
+    esc = re.sub(
+        r'(﴿[^﴾]+﴾)(\s*\[[^\]:]+:\s*[٠-٩\-]+\])?',
+        lambda m: f'<span class="ayah">{m.group(1)}</span>'
+        + (f' <span class="ayah-ref">{m.group(2).strip()}</span>' if m.group(2) else ''),
+        esc,
+    )
     return esc
 
 def extract_ayahs(text: str):

@@ -51,6 +51,11 @@ def encode_cover_data_uri(img_path: str) -> str:
     b64 = base64.b64encode(buf.getvalue()).decode("ascii")
     return f"data:image/jpeg;base64,{b64}"
 
+def encode_png_data_uri(img_path: str) -> str:
+    with open(img_path, "rb") as pf:
+        b64 = base64.b64encode(pf.read()).decode("ascii")
+    return f"data:image/png;base64,{b64}"
+
 with open(BOOK_DATA_PATH, encoding="utf-8") as f:
     book_data = json.load(f)
 
@@ -61,8 +66,13 @@ m_root = re.search(r'<div id="book-root">(.*)</div>\s*</body>', full_book_html, 
 book_root_inner = m_root.group(1) if m_root else ""
 
 cover_uri = encode_cover_data_uri(COVER_PATH)
-book_root_inner = book_root_inner.replace(
-    f"file://{COVER_PATH}", cover_uri
+basmalah_classic_uri = encode_png_data_uri(os.path.join(_ENG, "basmalah.png"))
+basmalah_plum_uri = encode_png_data_uri(os.path.join(_ENG, "basmalah_plum.png"))
+book_root_inner = (
+    book_root_inner
+    .replace(f"file://{COVER_PATH}", cover_uri)
+    .replace(f"file://{os.path.join(_ENG, 'basmalah.png')}", basmalah_plum_uri)
+    .replace(f"file://{os.path.join(_ENG, 'basmalah_plum.png')}", basmalah_plum_uri)
 )
 
 # Extract page map for exact page discovery
@@ -207,13 +217,13 @@ viewer_html = f"""<!DOCTYPE html>
   --bg-desk: #dfe6ee;
   --paper-bg: #ffffff;
   --ink: #111111;
-  --accent: #9b111e;
-  --matn-ink: #9b111e;
-  --strong-ink: #9b111e;
+  --accent: #96267e;
+  --matn-ink: #96267e;
+  --strong-ink: #96267e;
   --ayah-ink: #111111;
-  --rule-ink: #9b111e;
-  --fn-num-ink: #9b111e;
-  --subtle-ink: #333333;
+  --rule-ink: #96267e;
+  --fn-num-ink: #96267e;
+  --subtle-ink: #444444;
 }}
 
 * {{ box-sizing: border-box; }}
@@ -417,7 +427,7 @@ header.top-bar {{
 .page {{
   width: 162mm;
   height: 234mm;
-  padding: 13mm 19mm 12.5mm 19mm;
+  padding: 12.5mm 19mm 12.5mm 19mm;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -459,118 +469,419 @@ header.top-bar {{
 .title-plate-main {{
   font-size: 24pt;
   font-weight: 700;
+  line-height: 1.9;
+  margin-top: 3mm;
   color: var(--accent);
-  line-height: 1.4;
 }}
 .title-plate-sub {{
-  font-size: 15pt;
-  margin-top: 5mm;
-  line-height: 1.5;
-}}
-.title-plate-author {{
-  font-size: 12.5pt;
-  line-height: 1.6;
+  font-size: 14pt;
+  margin: 10pt 0 4pt 0;
+  color: var(--ink);
 }}
 .title-plate-desc {{
-  font-size: 11pt;
-  color: var(--subtle-ink);
-  line-height: 1.6;
+  font-size: 17pt;
+  font-weight: 700;
+  line-height: 1.9;
+  margin-top: 8pt;
+  color: var(--ink);
+}}
+.title-plate-author {{
+  font-size: 13.5pt;
+  color: var(--ink);
+}}
+.title-plate-author strong {{
+  color: var(--accent);
+}}
+.title-plate-divider {{
+  font-size: 11.2pt;
+  margin-top: 10pt;
+  border-top: 0.5pt solid var(--rule-ink);
+  padding-top: 8pt;
+}}
+.title-plate-bottom {{
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.8pt;
+  font-weight: 700;
+  padding: 0 4mm;
+  color: var(--accent);
+}}
+.disclaimer-box {{
+  border: 1pt solid var(--accent);
+  padding: 5mm 9mm;
+  margin: 2mm auto;
+  width: 90%;
+  font-size: 12pt;
+  font-weight: 700;
+  line-height: 1.85;
+  color: var(--ink);
+}}
+.colophon-source-box {{
+  border-top: 0.6pt solid var(--rule-ink);
+  padding-top: 5pt;
+  width: 90%;
+  font-size: 10.2pt;
+  line-height: 1.8;
+}}
+.colophon-source-title {{
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 10.8pt;
+  margin: 1pt 0;
+}}
+.colophon-accent {{
+  color: var(--accent);
+  font-weight: 700;
+}}
+.colophon-foot {{
+  border-top: 0.7pt solid var(--rule-ink);
+  padding-top: 4pt;
+  width: 85%;
+  font-size: 10.5pt;
+  color: var(--accent);
+  font-weight: 700;
+}}
+.basmalah-plate-img {{
+  width: 72mm;
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }}
 
 .running-header {{
-  height: 7mm;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 9.5pt;
-  color: var(--accent);
-  border-bottom: 0.5pt solid var(--rule-ink);
-  padding-bottom: 1.5mm;
-  margin-bottom: 3.5mm;
+  border-bottom: 0.8pt solid var(--rule-ink);
+  padding-bottom: 3.5pt;
+  margin-bottom: 4pt;
+  font-size: 9.8pt;
+  line-height: 1.45;
+  flex-shrink: 0;
 }}
-.running-header .hdr-page {{
+.rh-title {{
+  color: var(--accent);
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 84mm;
+}}
+.rh-badge-wrap {{
+  display: inline-flex;
+  align-items: center;
+  gap: 2.5pt;
+  color: var(--accent);
+  direction: ltr;
+  flex-shrink: 0;
+}}
+.rh-wing-svg {{
+  width: 18pt;
+  height: 9pt;
+  display: block;
+  color: var(--accent);
+}}
+.rh-pill {{
+  border: 0.85pt solid var(--accent);
+  border-radius: 999px;
+  padding: 0.5pt 7.5pt 1pt 7.5pt;
+  min-width: 10.5mm;
+  text-align: center;
+  font-weight: 700;
+  font-size: 9.5pt;
+  line-height: 1.25;
+  color: var(--accent);
 }}
 
-.page-body {{
+.body-frame {{
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
+  min-height: 0;
+  padding-top: 5pt;
+  padding-bottom: 0;
 }}
-
-.matn-box {{
-  font-size: 11pt;
-  line-height: 1.85;
+.chapter-banner {{
+  width: 100%;
+  margin: 0 0 2pt 0;
+  text-align: center;
+  flex-shrink: 0;
+}}
+.chapter-banner-svg {{
+  width: 100%;
+  max-width: 122mm;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  color: var(--accent);
+}}
+.matn-zone {{
+  font-size: 13.2pt;
+  line-height: 1.88;
+  flex-shrink: 0;
   color: var(--matn-ink);
+}}
+.matn-book-title {{
+  text-align: center;
+  font-size: 17pt;
   font-weight: 700;
+  line-height: 2.05;
+  padding-top: 3pt;
+  margin: 0 0 4pt 0;
+  color: var(--accent);
+}}
+.matn-bracket-title {{
+  text-align: center;
+  font-size: 14pt;
+  font-weight: 700;
+  line-height: 2.0;
+  padding-top: 3pt;
+  margin: 0 0 4pt 0;
+  color: var(--accent);
+}}
+.matn-p {{
+  margin: 0 0 1.5pt 0;
   text-align: justify;
   text-align-last: right;
-  margin-bottom: 2mm;
+  text-indent: 1.4em;
 }}
-.matn-box .dots-tail {{
-  letter-spacing: 2px;
+.matn-basmalah {{
+  text-align: center;
+  font-family: 'AmiriQuranFont', 'Amiri Quran', serif;
+  font-size: 15.5pt;
+  line-height: 1.95;
+  margin: 1pt 0 3pt 0;
+  color: var(--matn-ink);
 }}
-.middle-rule {{
+.matn-cont-dots {{
+  text-align: center;
+  font-size: 13.5pt;
+  line-height: 1.35;
+  letter-spacing: 0.5pt;
+  color: var(--accent);
+  margin: 1pt 0 3pt 0;
+}}
+.preface-h {{
+  text-align: center;
+  font-size: 16.5pt;
+  font-weight: 700;
+  line-height: 2.05;
+  padding-top: 3pt;
+  margin: 2pt 0 6pt 0;
+  color: var(--accent);
+}}
+.fn-ref {{
+  font-size: 0.62em;
+  vertical-align: super;
+  line-height: 0;
+  font-weight: 700;
+  margin-right: 1pt;
+  color: var(--fn-num-ink);
+}}
+.tailpiece-row {{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 5pt 0 4pt 0;
+  flex-shrink: 0;
+  color: var(--accent);
+}}
+.tailpiece-svg {{
+  width: 54mm;
+  height: auto;
+  display: block;
+  color: var(--accent);
+}}
+.split-rule {{
   border: none;
   border-top: 0.75pt solid var(--rule-ink);
-  margin: 2mm 0 2.5mm 0;
+  margin: 4pt 0 5.5pt 0;
+  flex-shrink: 0;
 }}
-
-.sharh-box {{
+.sharh-zone {{
+  font-size: 11.4pt;
+  line-height: 1.78;
   flex: 1;
-  font-size: 10.5pt;
-  line-height: 1.95;
+  overflow: visible;
+  min-height: 0;
   color: var(--ink);
+}}
+.sharh-p {{
+  margin: 0 0 1.5pt 0;
   text-align: justify;
   text-align-last: right;
-  overflow: hidden;
+  text-indent: 1.4em;
 }}
-.sharh-box strong {{
-  color: var(--strong-ink);
+.sharh-p.cont {{
+  text-indent: 0;
+}}
+.sharh-p strong, .sharh-zone strong {{
   font-weight: 700;
+  color: var(--strong-ink);
 }}
-.sharh-box .ayah {{
+.ayah {{
   font-family: 'AmiriQuranFont', 'Amiri Quran', serif;
-  font-size: 10.5pt;
+  font-size: 11.4pt;
+  line-height: 1.78;
   color: var(--ayah-ink);
 }}
-
-.footnote-area {{
-  border-top: 0.5pt solid var(--rule-ink);
-  padding-top: 2mm;
-  margin-top: 2.5mm;
+.matn-zone .ayah {{
+  font-size: 13.2pt;
+  color: var(--matn-ink);
+}}
+.ayah-ref {{
+  font-family: 'AmiriBook', 'Amiri', serif;
   font-size: 8.5pt;
-  line-height: 1.7;
+  font-weight: 400;
+  color: var(--subtle-ink);
+  white-space: nowrap;
+}}
+.footnote-area {{
+  margin-top: auto;
+  padding-top: 5pt;
+  flex-shrink: 0;
+}}
+.footnote-rule {{
+  width: 34mm;
+  border-top: 0.55pt solid var(--rule-ink);
+  margin-bottom: 2.5pt;
+}}
+.footnote-text {{
+  font-size: 8.8pt;
+  line-height: 1.55;
   color: var(--ink);
 }}
-.fn-line {{
-  margin-bottom: 1mm;
+.fn-lesson-note {{
+  color: var(--subtle-ink);
+  font-size: 8.4pt;
+  margin-bottom: 1pt;
 }}
-.fn-num {{
-  color: var(--fn-num-ink);
+.fn-gloss-row {{
+  margin-top: 0.5pt;
+}}
+.fn-gloss-num {{
   font-weight: 700;
-  margin-left: 3px;
+  color: var(--fn-num-ink);
 }}
-
-.toc-table, .ayah-index-table {{
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 9.5pt;
-  line-height: 1.6;
+.fn-gloss-term {{
+  font-weight: 700;
+  color: var(--ink);
 }}
-.toc-table td, .ayah-index-table td {{
-  padding: 2mm 1.5mm;
-  vertical-align: top;
+.toc-page-title {{
+  text-align: center;
+  font-size: 16.5pt;
+  font-weight: 700;
+  line-height: 2.0;
+  padding-top: 3pt;
+  margin: 2pt 0 7pt 0;
+  color: var(--accent);
 }}
-.ayah-index-table th {{
-  border-bottom: 1pt solid var(--rule-ink);
-  padding-bottom: 2mm;
+.toc-two-col {{
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  flex: 1;
+  align-items: stretch;
+  min-height: 0;
+}}
+.toc-col {{
+  width: 50%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}}
+.toc-col-right {{
+  padding-left: 5.5mm;
+  border-left: 0.6pt solid var(--rule-ink);
+}}
+.toc-col-left {{
+  padding-right: 5.5mm;
+}}
+.toc-book-row {{
+  font-size: 9.8pt;
+  font-weight: 700;
+  margin: 4pt 0 1.5pt 0;
+  line-height: 1.5;
+  display: flex;
+  align-items: baseline;
+  color: var(--accent);
+}}
+.toc-book-row a {{
+  color: var(--accent);
+  text-decoration: none;
+}}
+.toc-book-label {{
+  padding-right: 10pt;
+  white-space: nowrap;
+}}
+.toc-row {{
+  display: flex;
+  align-items: baseline;
+  font-size: 8.8pt;
+  line-height: 1.55;
+  margin: 0.5pt 0;
+}}
+.toc-row a, .ayah-idx-pages a {{
+  color: var(--ink);
+  text-decoration: none;
+}}
+.toc-row-title {{
+  white-space: normal;
+  max-width: 85%;
+}}
+.toc-dots {{
+  flex: 1;
+  border-bottom: 1pt dotted #555;
+  margin: 0 3pt 3pt 3pt;
+  min-width: 8pt;
+}}
+.toc-pg {{
+  font-size: 9pt;
+  white-space: nowrap;
   color: var(--accent);
   font-weight: 700;
 }}
-.ayah-index-table tr:nth-child(even) {{
-  background: rgba(0,0,0,0.02);
+.toc-section-center {{
+  text-align: center;
+  font-size: 11pt;
+  font-weight: 700;
+  margin: 5pt 0 2pt 0;
+  color: var(--accent);
+}}
+.index-col-head {{
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.2pt;
+  font-weight: 700;
+  border-bottom: 0.6pt solid var(--rule-ink);
+  padding-bottom: 2pt;
+  margin-bottom: 4pt;
+  color: var(--accent);
+}}
+.ayah-idx-row {{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 0.3pt solid #ccc;
+  padding: 2.5pt 0;
+  font-size: 10pt;
+  line-height: 1.6;
+}}
+.ayah-idx-text {{
+  font-family: 'AmiriQuranFont', 'Amiri Quran', serif;
+  flex: 1;
+  padding-left: 6pt;
+  color: var(--ink);
+}}
+.ayah-idx-pages {{
+  white-space: nowrap;
+  font-size: 9.8pt;
+  min-width: 14mm;
+  text-align: left;
+  color: var(--accent);
+  font-weight: 700;
 }}
 
 /* Verbatim Panel */
@@ -797,6 +1108,8 @@ function toggleVideo() {{
   }}
 }}
 
+const BASMALAH_PLUM_URI = {json.dumps(basmalah_plum_uri)};
+const BASMALAH_CLASSIC_URI = {json.dumps(basmalah_classic_uri)};
 const themes = [
   {{ key: 'two-color', label: '🎨 نسخة لونين' }},
   {{ key: 'white',     label: '🎨 أبيض كلاسيكي' }},
@@ -805,8 +1118,12 @@ const themes = [
 let tIdx = 0;
 function cyclePaperTheme() {{
   tIdx = (tIdx + 1) % themes.length;
-  document.body.setAttribute('data-theme', themes[tIdx].key);
+  const k = themes[tIdx].key;
+  document.body.setAttribute('data-theme', k);
   document.getElementById('btnTheme').textContent = themes[tIdx].label;
+  document.querySelectorAll('.basmalah-plate-img').forEach(im => {{
+    im.src = (k === 'two-color') ? BASMALAH_PLUM_URI : BASMALAH_CLASSIC_URI;
+  }});
 }}
 
 document.getElementById('book-root').addEventListener('click', (e) => {{
